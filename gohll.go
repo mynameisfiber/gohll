@@ -77,5 +77,16 @@ func (h *HLL) addSparse(hash uint64) {
     h.tmpSet[k] = true
     if len(h.tmpSet) > h.maxSparseSetSize {
         Merge(&h.sparseList, h.tmpSet)
+        h.tmpSet = make(map[uint64]bool)
+        if len(h.sparseList) * 64 > h.m1 * 6 {
+            h.toNormal()
+        }
+    }
+}
+
+func (h *HLL) toNormal() {
+    h.registers = make([]uint8, h.m1)
+    for _, value := range h.sparseList {
+        k := DecodeHash()
     }
 }

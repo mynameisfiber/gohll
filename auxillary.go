@@ -11,12 +11,16 @@ func SliceInt(N uint64, start, stop uint8) uint64 {
     // numerical value of start is larger than that of stop.
     //
     // Example in 32bit:
-    // start, stop = 30, 25
-    // N      = 11110000111100001111000011111110
-    // mask   = 00111110000000000000000000000000
-    // result = 00000000000000000000000000011000
-    mask := uint64((1<<start) - (1<<stop))
-    return N & mask >> stop
+    // start, stop = 6, 1
+    // N      = 11110000111100001111000011110000
+    // mask   = 00000000000000000000000001111110
+    // result = 00000000000000000000000000111000
+    mask := uint64((1<<(start+1)) - (1<<stop)
+    r := N & mask
+    if stop > 0 {
+        r >>= stop
+    }
+    return r
 }
 
 func LeadingBit(N uint64) uint8 {
@@ -26,8 +30,7 @@ func LeadingBit(N uint64) uint8 {
 
 func EncodeHash(x uint64, p1, p2 uint8) uint64 {
     if SliceInt(x, 63-p1, 64-p2) == 0 {
-        result := SliceInt(x, 63, 64-p2)
-        result <<= 7
+        result := SliceInt(x, 63, 64-p2) << 7
         result |= uint64(LeadingBit(x) << 1)
         result += 1
         return result
