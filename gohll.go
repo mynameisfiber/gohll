@@ -11,8 +11,7 @@ const (
 )
 
 type HLL struct {
-    P1 uint8
-    P2 uint8
+    P uint8
 
     m1 uint
     m2 uint
@@ -20,16 +19,16 @@ type HLL struct {
     alpha float64
     format byte
     
-    tmpSet map[uint64]bool
-    sparseList []uint
-    maxSparseSetSize uint
+    tempSet *SparseList
+    sparseList *SparseList
+    MaxSparseSetSize int
 
     registers []uint8
 }
 
-func NewHLL(p1, p2 uint8, maxSparseSetSize uint) *HLL {
-    m1 := uint(1 << p1)
-    m2 := uint(1 << p2)
+func NewHLL(p uint8, maxSparseSetSize int) *HLL {
+    m1 := uint(1 << p)
+    m2 := uint(1 << 25)
 
     var alpha float64
     switch m1 {
@@ -45,48 +44,59 @@ func NewHLL(p1, p2 uint8, maxSparseSetSize uint) *HLL {
 
     format := SPARSE
 
-    tmpSet := make(map[uint]bool)
-    sparseList := make([]uint, 0, m1 * 6)
+    tempSet := NewSparseList(p, maxSparseSetSize)
+    sparseList := NewSparseList(p, int(m1 * 6))
     maxSparseSetSize = maxSparseSetSize
 
     return &HLL{
-        P1: p1,
-        P2: p2,
+        P: p,
         m1: m1,
         m2: m2,
         alpha: alpha,
         format: format,
-        tmpSet: tmpSet,
+        tempSet: tempSet,
         sparseList: sparseList,
-        maxSparseSetSize: maxSparseSetSize,
+        MaxSparseSetSize: maxSparseSetSize,
     }
 }
 
 func (h *HLL) Add(value string) {
-    x, _ := Uvarint(mmh3.Hash128(value))
+    x, _ := binary.Uvarint(mmh3.Hash128([]byte(value)))
     switch h.format {
         case NORMAL:
-            continue // IMPLEMENT
+            h.addNormal(x)
         case SPARSE:
             h.addSparse(x)
     }
 }
 
+func (h *HLL) addNormal(hash uint64) {
+    index := SliceUint64(hash, 63, 64-h.P)
+    w := SliceUint64(hash, 63-h.P, 0)
+    rho := LeadingBitUint64(w)
+    if h.registers[index] < rho {
+        h.registers[index] = rho
+    }
+}
+
 func (h *HLL) addSparse(hash uint64) {
-    k := EncodeHash(hash, h.P1, h.P2)
-    h.tmpSet[k] = true
-    if len(h.tmpSet) > h.maxSparseSetSize {
-        Merge(&h.sparseList, h.tmpSet)
-        h.tmpSet = make(map[uint64]bool)
-        if len(h.sparseList) * 64 > h.m1 * 6 {
+    k := EncodeHash(hash, h.P)
+    h.tempSet.Add(k)
+    if h.tempSet.Full() {
+        h.sparseList.Merge(h.tempSet)
+        if h.sparseList.Full() {
             h.toNormal()
         }
     }
 }
 
 func (h *HLL) toNormal() {
+    h.format = NORMAL
     h.registers = make([]uint8, h.m1)
-    for _, value := range h.sparseList {
-        k := DecodeHash()
+    for _, value := range h.sparseList.Data {
+        index, rho := DecodeHash(value, h.P)
+        if h.registers[index] < rho {
+            h.registers[index] = rho
+        }
     }
 }
