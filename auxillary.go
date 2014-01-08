@@ -30,7 +30,3 @@ func GetIndex(x uint32, p uint8) uint32 {
         return SliceUint32(x, p+1, 1)
     }
 }
-
-func Merge(sparseList *[]uint64, tmpSet []uint32) {
-
-}
