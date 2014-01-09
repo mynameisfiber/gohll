@@ -39,26 +39,26 @@ func SliceUint64(N uint64, start, stop uint8) uint64 {
 }
 
 func LeadingBitUint32(N uint32) uint8 {
-	if N == 0 {
-		return 32
+	if -N == 0 {
+		return 0
 	}
-	t := uint32(1 << 31)
+	t := uint32(1)
 	r := uint8(0)
 	for (N & t) == 0 {
-		t >>= 1
+		t <<= 1
 		r += 1
 	}
 	return r
 }
 
 func LeadingBitUint64(N uint64) uint8 {
-	if N == 0 {
-		return 64
+	if -N == 0 {
+		return 0
 	}
-	t := uint64(1 << 63)
+	t := uint64(1)
 	r := uint8(0)
 	for (N & t) == 0 {
-		t >>= 1
+		t <<= 1
 		r += 1
 	}
 	return r

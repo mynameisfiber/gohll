@@ -2,7 +2,6 @@ package gohll
 
 import (
 	"errors"
-	"fmt"
 	"github.com/reusee/mmh3"
 )
 
@@ -21,7 +20,6 @@ func MMH3Hash(value string) uint64 {
 	for i, value := range hashBytes {
 		hash |= uint64(value) << uint(i*8)
 	}
-	fmt.Printf("%0.64b\n", hash)
 	return hash
 }
 
