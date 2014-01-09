@@ -7,10 +7,10 @@ import (
 )
 
 func TestSparse(t *testing.T) {
-	h, err := NewHLL(4, 1000)
+	h, err := NewHLL(6, 10000)
 	assert.Equal(t, err, nil, "Could not create HLL")
 
-	for i := 0; i <= 500; i += 1 {
+	for i := 0; i <= 5000; i += 1 {
 		h.Add(fmt.Sprintf("%d", i))
 	}
 
@@ -21,8 +21,8 @@ func TestSparse(t *testing.T) {
 	fmt.Println("m2: ", h.m2)
 	fmt.Println("Sizeof sparseList: ", h.sparseList.Len())
 	fmt.Println("Sizeof tempSet: ", h.tempSet.Len())
-    //for _, v := range h.sparseList.Data {
-    //    fmt.Printf("%0.32b\n", v)
-    //}
+	//for _, v := range h.sparseList.Data {
+	//    fmt.Printf("%0.32b\n", v)
+	//}
 	assert.Equal(t, c, 0, "blah")
 }

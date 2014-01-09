@@ -44,12 +44,12 @@ func TestLeadingBitUint32(t *testing.T) {
 	assert.Equal(t, result, ideal, "Incorrect Leading Bit")
 
 	N = uint32(0x00000000)
-	ideal = uint8(0)
+	ideal = uint8(32)
 	result = LeadingBitUint32(N)
 	assert.Equal(t, result, ideal, "Incorrect Leading Bit")
 
 	N = uint32(0x00f00000)
-	ideal = uint8(5*4)
+	ideal = uint8(2 * 4)
 	result = LeadingBitUint32(N)
 	assert.Equal(t, result, ideal, "Incorrect Leading Bit")
 }
@@ -61,12 +61,12 @@ func TestLeadingBitUint64(t *testing.T) {
 	assert.Equal(t, result, ideal, "Incorrect Leading Bit")
 
 	N = uint64(0x0000000000000000)
-	ideal = uint8(0)
+	ideal = uint8(64)
 	result = LeadingBitUint64(N)
 	assert.Equal(t, result, ideal, "Incorrect Leading Bit")
 
-	N = uint64(0x000000000000f000)
-	ideal = uint8(3*4)
+	N = uint64(0x0000f00000000000)
+	ideal = uint8(4 * 4)
 	result = LeadingBitUint64(N)
 	assert.Equal(t, result, ideal, "Incorrect Leading Bit")
 }
