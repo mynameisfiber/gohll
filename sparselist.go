@@ -65,31 +65,31 @@ func (sl *SparseList) Merge(tmpList *SparseList) {
 	}
 
 	var lastTmpIndex uint32
-    slDirty := false
+	slDirty := false
 	for _, value := range tmpList.Data {
 		tmpIndex, tmpRho := DecodeHash(value, tmpList.P)
 		if tmpIndex == lastTmpIndex {
 			continue
 		} else if tmpIndex > slIndex {
 			sl.Add(value)
-            slDirty = true
+			slDirty = true
 			for slIndex < tmpIndex && sli+1 < sl.Len() {
 				sli += 1
 				slIndex, slRho = DecodeHash(sl.Data[sli], sl.P)
 			}
 		} else if tmpIndex < slIndex {
 			sl.Add(value)
-            slDirty = true
+			slDirty = true
 		} else if tmpIndex == slIndex {
 			if tmpRho > slRho {
-                slDirty = true
+				slDirty = true
 				sl.Data[sli] = value
 			}
 		}
 		lastTmpIndex = tmpIndex
 	}
 	tmpList.Clear()
-    if slDirty {
-        sort.Sort(sl)
-    }
+	if slDirty {
+		sort.Sort(sl)
+	}
 }

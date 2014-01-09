@@ -33,5 +33,5 @@ func GetIndex(x uint32, p uint8) uint32 {
 }
 
 func LinearCounting(m1 uint, V int) float64 {
-	return float64(m1) * math.Log2(float64(m1)/float64(V))
+	return float64(m1) * math.Log(float64(m1)/float64(V))
 }
