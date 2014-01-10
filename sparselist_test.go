@@ -20,6 +20,6 @@ func TestMerge(t *testing.T) {
 
 	s1.Merge(s2)
 
-	assert.Equal(t, s1.Len(), 1, "Did not merge properlly")
+	assert.Equal(t, s1.Len(), 1, "Did not merge properly")
 	assert.Equal(t, s1.Data[0], n2, "Did not pick correct number")
 }

@@ -1,8 +1,10 @@
 package gohll
 
 import (
+    "fmt"
 	"errors"
 	"github.com/reusee/mmh3"
+    "math"
 )
 
 const (
@@ -92,7 +94,7 @@ func (h *HLL) Add(value string) {
 
 func (h *HLL) addNormal(hash uint64) {
 	index := SliceUint64(hash, 63, 64-h.P)
-	w := SliceUint64(hash, 63-h.P, 0)
+	w := SliceUint64(hash, 63-h.P, 0) << h.P
 	rho := LeadingBitUint64(w)
 	if h.registers[index] < rho {
 		h.registers[index] = rho
@@ -113,12 +115,14 @@ func (h *HLL) addSparse(hash uint64) {
 func (h *HLL) toNormal() {
 	h.format = NORMAL
 	h.registers = make([]uint8, h.m1)
+	h.sparseList.Merge(h.tempSet)
 	for _, value := range h.sparseList.Data {
 		index, rho := DecodeHash(value, h.P)
 		if h.registers[index] < rho {
 			h.registers[index] = rho
 		}
 	}
+    h.sparseList.Clear()
 }
 
 func (h *HLL) Cardinality() float64 {
@@ -133,7 +137,40 @@ func (h *HLL) Cardinality() float64 {
 }
 
 func (h *HLL) cardinalityNormal() float64 {
-	return 0.0
+    var V int
+    Etop := h.alpha * float64(h.m1 * h.m1)
+    Ebottom := 0.0
+    for _, value := range h.registers {
+        Ebottom += math.Pow(2, -1.0 * float64(value))
+        if V == 0 {
+            V += 1
+        }
+    }
+    E := Etop / Ebottom
+    var Eprime float64
+    if E < 5 * float64(h.m1) {
+        Eprime = E - EstimateBias(E, h.P)
+    } else {
+        Eprime = E
+    }
+
+    var H float64
+    if V != 0 {
+        fmt.Println("H = LC", V)
+        H = LinearCounting(h.m1, V)
+    } else {
+        fmt.Println("H = Eprime")
+        H = Eprime
+    }
+
+    if H <= Threshold(h.P) {
+        fmt.Println("using H")
+        return H
+    } else {
+        fmt.Println("using Eprime")
+        return Eprime
+    }
+
 }
 
 func (h *HLL) cardinalitySparse() float64 {
