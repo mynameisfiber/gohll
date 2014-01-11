@@ -1,10 +1,9 @@
 package gohll
 
 import (
-    "fmt"
 	"errors"
 	"github.com/reusee/mmh3"
-    "math"
+	"math"
 )
 
 const (
@@ -122,7 +121,7 @@ func (h *HLL) toNormal() {
 			h.registers[index] = rho
 		}
 	}
-    h.sparseList.Clear()
+	h.sparseList.Clear()
 }
 
 func (h *HLL) Cardinality() float64 {
@@ -137,43 +136,42 @@ func (h *HLL) Cardinality() float64 {
 }
 
 func (h *HLL) cardinalityNormal() float64 {
-    var V int
-    Etop := h.alpha * float64(h.m1 * h.m1)
-    Ebottom := 0.0
-    for _, value := range h.registers {
-        Ebottom += math.Pow(2, -1.0 * float64(value))
-        if V == 0 {
-            V += 1
-        }
-    }
-    E := Etop / Ebottom
-    var Eprime float64
-    if E < 5 * float64(h.m1) {
-        Eprime = E - EstimateBias(E, h.P)
-    } else {
-        Eprime = E
-    }
+	var V int
+	Etop := h.alpha * float64(h.m1*h.m1)
+	Ebottom := 0.0
+	for _, value := range h.registers {
+		Ebottom += math.Pow(2, -1.0*float64(value+1))
+		if value == 0 {
+			V += 1
+		}
+	}
+	E := Etop / Ebottom
+	var Eprime float64
+	if E < 5*float64(h.m1) {
+		Eprime = E - EstimateBias(E, h.P)
+	} else {
+		Eprime = E
+	}
 
-    var H float64
-    if V != 0 {
-        fmt.Println("H = LC", V)
-        H = LinearCounting(h.m1, V)
-    } else {
-        fmt.Println("H = Eprime")
-        H = Eprime
-    }
+	var H float64
+	if V != 0 {
+		H = LinearCounting(h.m1, V)
+	} else {
+		H = Eprime
+	}
 
-    if H <= Threshold(h.P) {
-        fmt.Println("using H")
-        return H
-    } else {
-        fmt.Println("using Eprime")
-        return Eprime
-    }
+	if H <= Threshold(h.P) {
+		return H
+	} else {
+		return Eprime
+	}
 
 }
 
 func (h *HLL) cardinalitySparse() float64 {
+	if h.sparseList.Len() == 0 {
+		return float64(h.tempSet.Len())
+	}
 	h.sparseList.Merge(h.tempSet)
-	return LinearCounting(h.m2, int(h.m2)-h.sparseList.Len())
+	return LinearCounting(h.m1, int(h.m1)-h.sparseList.Len())
 }

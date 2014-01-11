@@ -37,41 +37,41 @@ func LinearCounting(m1 uint, V int) float64 {
 }
 
 func EstimateBias(E float64, p uint8) float64 {
-    return 0.0
+	return 0.0
 }
 
 func Threshold(p uint8) float64 {
-    switch p {
-        case 4:
-            return 10
-        case 5:
-            return 20
-        case 6:
-            return 40
-        case 8:
-            return 220
-        case 7:
-            return 80
-        case 9:
-            return 400
-        case 10:
-            return 900
-        case 11:
-            return 1800
-        case 12:
-            return 3100
-        case 13:
-            return 6500
-        case 14:
-            return 11500
-        case 15:
-            return 20000
-        case 16:
-            return 50000
-        case 17:
-            return 120000
-        case 18:
-            return 350000
-    }
-    return 0
+	switch p {
+	case 4:
+		return 10
+	case 5:
+		return 20
+	case 6:
+		return 40
+	case 8:
+		return 220
+	case 7:
+		return 80
+	case 9:
+		return 400
+	case 10:
+		return 900
+	case 11:
+		return 1800
+	case 12:
+		return 3100
+	case 13:
+		return 6500
+	case 14:
+		return 11500
+	case 15:
+		return 20000
+	case 16:
+		return 50000
+	case 17:
+		return 120000
+	case 18:
+		return 350000
+	}
+	return 0
 }
