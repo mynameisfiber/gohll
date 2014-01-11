@@ -2,6 +2,7 @@ package gohll
 
 import (
 	"github.com/stretchr/testify/assert"
+	"math"
 	"testing"
 )
 
@@ -49,4 +50,13 @@ func TestEncodeDecode2(t *testing.T) {
 
 	assert.Equal(t, index, uint32(0x0f0), "Incorrect index")
 	assert.Equal(t, rho, uint8(16), "Incorrect rho")
+}
+
+func TestEstimateBias(t *testing.T) {
+	bias := EstimateBias(27.5, 5)
+	actualBias := 17.4134
+
+	if math.Abs(bias/actualBias-1) > 0.01 {
+		t.Fatalf("Incorrect bias estimate.  Calculated %f, should be closer to %f", bias, actualBias)
+	}
 }

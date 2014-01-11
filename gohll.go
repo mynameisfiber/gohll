@@ -2,6 +2,7 @@ package gohll
 
 import (
 	"errors"
+	"fmt"
 	"github.com/reusee/mmh3"
 	"math"
 )
@@ -148,6 +149,7 @@ func (h *HLL) cardinalityNormal() float64 {
 	E := Etop / Ebottom
 	var Eprime float64
 	if E < 5*float64(h.m1) {
+		fmt.Println("correcting")
 		Eprime = E - EstimateBias(E, h.P)
 	} else {
 		Eprime = E

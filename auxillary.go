@@ -37,7 +37,35 @@ func LinearCounting(m1 uint, V int) float64 {
 }
 
 func EstimateBias(E float64, p uint8) float64 {
-	return 0.0
+	if p > 18 {
+		return 0.0
+	}
+	estimateVector := RawEstimateData[p-4]
+	N := len(estimateVector)
+	if E < estimateVector[0] || E > estimateVector[N-1] {
+		return 0.0
+	}
+
+	biasVector := BiasData[p-4]
+
+	width := 2.0
+	width = math.Min(width, E-estimateVector[0])
+	width = math.Min(width, estimateVector[N-1]-E)
+	width2 := width * width
+
+	correctionSum := 0.0
+	correctionN := 0.0
+	var d float64
+	for i, v := range estimateVector {
+		d = (v - E)
+		if d*d <= width2 {
+			correctionSum += biasVector[i]
+			correctionN += 1
+		} else if d > width {
+			break
+		}
+	}
+	return correctionSum / correctionN
 }
 
 func Threshold(p uint8) float64 {
