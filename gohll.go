@@ -9,7 +9,6 @@ import (
 	"errors"
 	"github.com/reusee/mmh3"
 	"math"
-    //"fmt"
 )
 
 const (
@@ -42,7 +41,7 @@ type HLL struct {
 	alpha  float64
 	format byte
 
-	tempSet          *SparseList
+	tempSet          *TempSet
 	sparseList       *SparseList
 
 	registers []uint8
@@ -70,8 +69,11 @@ func NewHLL(p uint8) (*HLL, error) {
 
 	format := SPARSE
 
-	tempSet := NewSparseList(p, int(m1 / 4))
-	sparseList := NewSparseList(p, int(m1))
+    // Since HLL.registers is a uint8 slice and the SparseList is a uint32
+    // slice, we switch from sparse to normal with the sparse list is |m1/4| in
+    // size (ie: the same size as the registers would be.
+	sparseList := NewSparseList(p, int(m1 * 6))
+	tempSet := make(TempSet, 0, int(m1 / 8))
 
 	return &HLL{
 		P:                p,
@@ -80,7 +82,7 @@ func NewHLL(p uint8) (*HLL, error) {
 		m2:               m2,
 		alpha:            alpha,
 		format:           format,
-		tempSet:          tempSet,
+		tempSet:          &tempSet,
 		sparseList:       sparseList,
 	}, nil
 }
@@ -106,11 +108,11 @@ func (h *HLL) addNormal(hash uint64) {
 
 func (h *HLL) addSparse(hash uint64) {
 	k := EncodeHash(hash, h.P)
-	h.tempSet.Add(k)
+	h.tempSet = h.tempSet.Append(k)
 	if h.tempSet.Full() {
 		h.mergeSparse()
-        h.checkModeChange()
 	}
+    h.checkModeChange()
 }
 
 func (h *HLL) mergeSparse() {
@@ -133,7 +135,7 @@ func (h *HLL) toNormal() {
 			h.registers[index] = rho
 		}
 	}
-	for _, value := range h.tempSet.Data {
+	for _, value := range *(h.tempSet) {
 		index, rho := DecodeHash(value, h.P)
 		if h.registers[index] < rho {
 			h.registers[index] = rho
@@ -196,7 +198,7 @@ func (h *HLL) cardinalitySparse() float64 {
 		return float64(h.tempSet.Len())
 	}
 	h.mergeSparse()
-	return LinearCounting(h.m1, int(h.m1)-h.sparseList.Len())
+	return LinearCounting(h.m2, int(h.m2)-h.sparseList.Len())
 }
 
 func (h *HLL) Union(other *HLL) error {
@@ -225,6 +227,13 @@ func (h *HLL) Union(other *HLL) error {
         other.mergeSparse()
         h.sparseList.Merge(other.sparseList)
         h.checkModeChange()
+    }
+    return nil
+}
+
+func (h *HLL) UnionCardinality(other *HLL) error {
+    if h.P != other.P {
+        return SamePError
     }
     return nil
 }

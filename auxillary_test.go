@@ -5,7 +5,6 @@ import (
 	"math"
 	"testing"
     "math/rand"
-    "fmt"
 )
 
 func TestEncodeHash(t *testing.T) {
@@ -67,10 +66,8 @@ func TestEncodeDecode3(t *testing.T) {
         e := EncodeHash(hash, p)
         edIndex, edRho := DecodeHash(e, p)
 
-        fmt.Printf("%0.64b\n", w)
-        fmt.Printf("i: %d, ei: %d, r: %d, er: %d, lb: %d\n", index, edIndex, rho, edRho, e&0x1)
-        //assert.Equal(t, edIndex, index, "Incorrect index")
-        //assert.Equal(t, edRho, rho, "Incorrect index")
+        assert.Equal(t, edIndex, index, "Incorrect index")
+        assert.Equal(t, edRho, rho, "Incorrect index")
     }
 }
 

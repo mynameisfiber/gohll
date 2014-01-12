@@ -4,6 +4,12 @@ import (
 	"sort"
 )
 
+type MergableList interface {
+    sort.Interface
+    Get(int) uint32
+}
+    
+
 type SparseList struct {
 	Data    []uint32
 	P       uint8
@@ -27,8 +33,8 @@ func (sl *SparseList) Full() bool {
 }
 
 func (sl *SparseList) Less(i, j int) bool {
-	indexI, rhoI := DecodeHash(sl.Data[i], sl.P)
-	indexJ, rhoJ := DecodeHash(sl.Data[j], sl.P)
+	indexI := GetIndexSparse(sl.Data[i])
+	indexJ := GetIndexSparse(sl.Data[j])
 
 	if indexI < indexJ {
 		return true
@@ -37,7 +43,7 @@ func (sl *SparseList) Less(i, j int) bool {
 	} else {
 		// If indexI == indexJ we do a reverse sort on the rho values so we can
 		// easily find the largest rho value for the same index
-		return rhoI > rhoJ
+		return sl.Data[i] > sl.Data[j]
 	}
 }
 
@@ -49,11 +55,15 @@ func (sl *SparseList) Swap(i, j int) {
 	sl.Data[i], sl.Data[j] = sl.Data[j], sl.Data[i]
 }
 
+func (sl *SparseList) Get(i int) uint32 {
+    return sl.Data[i]
+}
+
 func (sl *SparseList) Clear() {
 	sl.Data = sl.Data[0:0]
 }
 
-func (sl *SparseList) Merge(tmpList *SparseList) {
+func (sl *SparseList) Merge(tmpList MergableList) {
 	// This function assumes that sl is already sorted!
 	if tmpList.Len() == 0 {
 		return
@@ -61,11 +71,10 @@ func (sl *SparseList) Merge(tmpList *SparseList) {
 	sort.Sort(tmpList)
 
 	var slIndex uint32
-	var slRho uint8
 	var slStopIteration bool
 	sli := int(0)
 	if sl.Len() > 0 {
-		slIndex, slRho = DecodeHash(sl.Data[0], sl.P)
+		slIndex = GetIndexSparse(sl.Data[0])
 		slStopIteration = false
 	} else {
 		slStopIteration = true
@@ -73,8 +82,10 @@ func (sl *SparseList) Merge(tmpList *SparseList) {
 
 	slDirty := false
 	var lastTmpIndex uint32
-	for i, value := range tmpList.Data {
-		tmpIndex, tmpRho := DecodeHash(value, tmpList.P)
+    var value uint32
+    for i := 0; i < tmpList.Len(); i++ {
+        value = tmpList.Get(i)
+		tmpIndex := GetIndexSparse(value)
 		if tmpIndex == lastTmpIndex && i != 0 {
 			continue
 		}
@@ -85,14 +96,14 @@ func (sl *SparseList) Merge(tmpList *SparseList) {
 					slStopIteration = true
 					break
 				}
-				slIndex, slRho = DecodeHash(sl.Data[sli], sl.P)
+				slIndex = GetIndexSparse(sl.Data[sli])
 			}
 		}
 		if slStopIteration || tmpIndex < slIndex {
 			sl.Add(value)
 			slDirty = true
 		} else if tmpIndex == slIndex {
-			if tmpRho > slRho {
+			if value > sl.Data[sli] {
 				slDirty = true
 				sl.Data[sli] = value
 			}

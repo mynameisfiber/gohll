@@ -20,7 +20,7 @@ func TestSparse(t *testing.T) {
 	assert.Equal(t, h.format, SPARSE, "Not using sparse mode")
 
 	c := h.Cardinality()
-	errorRate := 1.04 / math.Sqrt(float64(h.m1))
+	errorRate := 1.04 / math.Sqrt(float64(h.m2))
 	actualError := math.Abs(c-i-1) / (i - 1)
 	if actualError > errorRate {
 		t.Fatalf("Error too high for cardinality estimation: %f should be %f (rate of %f instead of %f)", c, i-1, actualError, errorRate)
