@@ -1,5 +1,8 @@
 package gohll
 
+//*
+// Biasing data from: http://goo.gl/iU8Ig
+//*
 var (
 	RawEstimateData = [][]float64{
 		// precision 4

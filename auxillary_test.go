@@ -4,6 +4,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"math"
 	"testing"
+    "math/rand"
+    "fmt"
 )
 
 func TestEncodeHash(t *testing.T) {
@@ -50,6 +52,26 @@ func TestEncodeDecode2(t *testing.T) {
 
 	assert.Equal(t, index, uint32(0x0f0), "Incorrect index")
 	assert.Equal(t, rho, uint8(16), "Incorrect rho")
+}
+
+func TestEncodeDecode3(t *testing.T) {
+    p := uint8(4)
+    var hash uint64
+    for i := 0; i < 100; i += 1 {
+        hash = uint64(rand.Uint32()) << 32 + uint64(rand.Uint32())
+
+	    index := SliceUint64(hash, 63, 64-p)
+	    w := SliceUint64(hash, 63-p, 0) << p
+	    rho := LeadingBitUint64(w)
+
+        e := EncodeHash(hash, p)
+        edIndex, edRho := DecodeHash(e, p)
+
+        fmt.Printf("%0.64b\n", w)
+        fmt.Printf("i: %d, ei: %d, r: %d, er: %d, lb: %d\n", index, edIndex, rho, edRho, e&0x1)
+        //assert.Equal(t, edIndex, index, "Incorrect index")
+        //assert.Equal(t, edRho, rho, "Incorrect index")
+    }
 }
 
 func TestEstimateBias(t *testing.T) {

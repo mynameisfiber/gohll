@@ -1,10 +1,15 @@
 package gohll
 
+//**
+// HLL++ Implemintation by Micha Gorelick
+// paper -- http://im.micha.gd/1dc0z0S
+//**
+
 import (
 	"errors"
-	"fmt"
 	"github.com/reusee/mmh3"
 	"math"
+    //"fmt"
 )
 
 const (
@@ -14,6 +19,7 @@ const (
 
 var (
 	InvalidPError = errors.New("Invalid value of P, must be 4<=p<=25")
+    SamePError = errors.New("Both HLL instances must have the same value of P")
 )
 
 func MMH3Hash(value string) uint64 {
@@ -38,12 +44,11 @@ type HLL struct {
 
 	tempSet          *SparseList
 	sparseList       *SparseList
-	MaxSparseSetSize int
 
 	registers []uint8
 }
 
-func NewHLL(p uint8, maxSparseSetSize int) (*HLL, error) {
+func NewHLL(p uint8) (*HLL, error) {
 	if p < 4 || p > 25 {
 		return nil, InvalidPError
 	}
@@ -65,13 +70,11 @@ func NewHLL(p uint8, maxSparseSetSize int) (*HLL, error) {
 
 	format := SPARSE
 
-	tempSet := NewSparseList(p, maxSparseSetSize)
-	sparseList := NewSparseList(p, int(m1*6))
-	maxSparseSetSize = maxSparseSetSize
+	tempSet := NewSparseList(p, int(m1 / 4))
+	sparseList := NewSparseList(p, int(m1))
 
 	return &HLL{
 		P:                p,
-		MaxSparseSetSize: maxSparseSetSize,
 		Hasher:           MMH3Hash,
 		m1:               m1,
 		m2:               m2,
@@ -105,23 +108,38 @@ func (h *HLL) addSparse(hash uint64) {
 	k := EncodeHash(hash, h.P)
 	h.tempSet.Add(k)
 	if h.tempSet.Full() {
-		h.sparseList.Merge(h.tempSet)
-		if h.sparseList.Full() {
-			h.toNormal()
-		}
+		h.mergeSparse()
+        h.checkModeChange()
 	}
+}
+
+func (h *HLL) mergeSparse() {
+    h.sparseList.Merge(h.tempSet)
+    h.tempSet.Clear()
+}
+
+func (h *HLL) checkModeChange() {
+    if h.sparseList.Full() {
+    	h.toNormal()
+    }
 }
 
 func (h *HLL) toNormal() {
 	h.format = NORMAL
 	h.registers = make([]uint8, h.m1)
-	h.sparseList.Merge(h.tempSet)
 	for _, value := range h.sparseList.Data {
 		index, rho := DecodeHash(value, h.P)
 		if h.registers[index] < rho {
 			h.registers[index] = rho
 		}
 	}
+	for _, value := range h.tempSet.Data {
+		index, rho := DecodeHash(value, h.P)
+		if h.registers[index] < rho {
+			h.registers[index] = rho
+		}
+	}
+	h.tempSet.Clear()
 	h.sparseList.Clear()
 }
 
@@ -147,9 +165,13 @@ func (h *HLL) cardinalityNormal() float64 {
 		}
 	}
 	E := Etop / Ebottom
+
+    return h.cardinalityNormalCorrected(E, V)
+}
+
+func (h *HLL) cardinalityNormalCorrected(E float64, V int) float64 {
 	var Eprime float64
 	if E < 5*float64(h.m1) {
-		fmt.Println("correcting")
 		Eprime = E - EstimateBias(E, h.P)
 	} else {
 		Eprime = E
@@ -167,13 +189,42 @@ func (h *HLL) cardinalityNormal() float64 {
 	} else {
 		return Eprime
 	}
-
 }
 
 func (h *HLL) cardinalitySparse() float64 {
 	if h.sparseList.Len() == 0 {
 		return float64(h.tempSet.Len())
 	}
-	h.sparseList.Merge(h.tempSet)
+	h.mergeSparse()
 	return LinearCounting(h.m1, int(h.m1)-h.sparseList.Len())
+}
+
+func (h *HLL) Union(other *HLL) error {
+    if h.P != other.P {
+        return SamePError
+    }
+    if other.format == NORMAL {
+        if h.format == SPARSE {
+            h.toNormal()
+        }
+        for i := uint(0); i < h.m1; i++ {
+            if other.registers[i] > h.registers[i] {
+                h.registers[i] = other.registers[i]
+            }
+        }
+    } else if h.format == NORMAL && other.format == SPARSE {
+	    other.mergeSparse()
+	    for _, value := range other.sparseList.Data {
+	    	index, rho := DecodeHash(value, h.P)
+	    	if h.registers[index] < rho {
+	    		h.registers[index] = rho
+	    	}
+	    }
+    } else if h.format == SPARSE && other.format == SPARSE {
+        h.mergeSparse()
+        other.mergeSparse()
+        h.sparseList.Merge(other.sparseList)
+        h.checkModeChange()
+    }
+    return nil
 }

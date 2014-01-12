@@ -99,7 +99,6 @@ func (sl *SparseList) Merge(tmpList *SparseList) {
 		}
 		lastTmpIndex = tmpIndex
 	}
-	tmpList.Clear()
 	if slDirty {
 		sort.Sort(sl)
 	}
