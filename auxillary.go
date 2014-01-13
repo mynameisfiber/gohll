@@ -12,9 +12,8 @@ func EncodeHash(x uint64, p uint8) uint32 {
 		result |= (uint32(LeadingBitUint64(w)) << 1)
 		result |= 1
 		return result
-	} else {
-		return uint32(x>>32) &^ 0x1
 	}
+	return uint32(x>>32) &^ 0x1
 }
 
 func DecodeHash(x uint32, p uint8) (uint32, uint8) {

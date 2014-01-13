@@ -39,11 +39,10 @@ func (sl *SparseList) Less(i, j int) bool {
 		return true
 	} else if indexI > indexJ {
 		return false
-	} else {
-		// If indexI == indexJ we do a reverse sort on the rho values so we can
-		// easily find the largest rho value for the same index
-		return sl.Data[i] > sl.Data[j]
 	}
+	// If indexI == indexJ we do a reverse sort on the rho values so we can
+	// easily find the largest rho value for the same index
+	return sl.Data[i] > sl.Data[j]
 }
 
 func (sl *SparseList) Add(N uint32) {

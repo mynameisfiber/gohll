@@ -187,9 +187,8 @@ func (h *HLL) cardinalityNormalCorrected(Ebottom float64, V int) float64 {
 
 	if H <= Threshold(h.P) {
 		return H
-	} else {
-		return Eprime
 	}
+	return Eprime
 }
 
 func (h *HLL) cardinalitySparse() float64 {

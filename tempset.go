@@ -20,11 +20,10 @@ func (ts TempSet) Less(i, j int) bool {
 		return true
 	} else if indexI > indexJ {
 		return false
-	} else {
-		// If indexI == indexJ we do a reverse sort on the rho values so we can
-		// easily find the largest rho value for the same index
-		return ts[i] > ts[j]
 	}
+	// If indexI == indexJ we do a reverse sort on the rho values so we can
+	// easily find the largest rho value for the same index
+	return ts[i] > ts[j]
 }
 
 func (ts TempSet) Get(i int) uint32 {
