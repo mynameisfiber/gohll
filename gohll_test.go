@@ -100,7 +100,7 @@ func TestUnionNormalSparse(t *testing.T) {
 	assert.Nil(t, err)
 
 	h1.toNormal()
-	h2.sparseList.MaxSize = 1e10
+	h2.sparseList.MaxSize = 1e8
 
 	testSetOperations(t, h1, h2)
 }
@@ -112,7 +112,7 @@ func TestUnionSparseNormal(t *testing.T) {
 	h2, err := NewHLL(10)
 	assert.Nil(t, err)
 
-	h1.sparseList.MaxSize = 1e10
+	h1.sparseList.MaxSize = 1e8
 	h2.toNormal()
 
 	testSetOperations(t, h1, h2)
@@ -126,8 +126,8 @@ func TestUnionSparseSparse(t *testing.T) {
 	h2, err := NewHLL(10)
 	assert.Nil(t, err)
 
-	h1.sparseList.MaxSize = 1e10
-	h2.sparseList.MaxSize = 1e10
+	h1.sparseList.MaxSize = 1e8
+	h2.sparseList.MaxSize = 1e8
 
 	testSetOperations(t, h1, h2)
 }
