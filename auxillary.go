@@ -52,24 +52,22 @@ func EstimateBias(E float64, p uint8) float64 {
 
 	biasVector := BiasData[p-4]
 
-	width := 2.0
-	width = math.Min(width, E-estimateVector[0])
-	width = math.Min(width, estimateVector[N-1]-E)
-	width2 := width * width
-
-	correctionSum := 0.0
-	correctionN := 0.0
-	var d float64
-	for i, v := range estimateVector {
-		d = (v - E)
-		if d*d <= width2 {
-			correctionSum += biasVector[i]
-			correctionN += 1
-		} else if d > width {
-			break
+	for i, v := range estimateVector[1:] {
+		if v == E {
+			return biasVector[i]
+		}
+		if v > E && estimateVector[i-1] < E {
+			return linearInterpolation(estimateVector[i-1:i+1], biasVector[i-1:i+1], E)
 		}
 	}
-	return correctionSum / correctionN
+	return 0.0
+}
+
+func linearInterpolation(x, y []float64, x0 float64) float64 {
+	if len(x) != 2 || len(y) != 2 {
+		return 0.0
+	}
+	return y[0] + (y[1]-y[0])*(x0-x[0])/(x[1]-x[0])
 }
 
 func Threshold(p uint8) float64 {

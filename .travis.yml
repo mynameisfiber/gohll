@@ -1,0 +1,12 @@
+language: go
+
+go:
+  - 1.0
+  - 1.1
+  - tip
+
+install:
+  - go get github.com/reusee/mmh3
+
+script:
+  - go test -v ./...

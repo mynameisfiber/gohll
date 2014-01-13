@@ -230,75 +230,98 @@ func (h *HLL) Union(other *HLL) error {
 	return nil
 }
 
-func (h *HLL) UnionCardinality(other *HLL) (float64, error) {
+func (h *HLL) CardinalityIntersection(other *HLL) (float64, error) {
 	if h.P != other.P {
 		return 0.0, SamePError
 	}
-	if h.format == NORMAL && other.format == NORMAL {
-		var V int
-		Ebottom := 0.0
-		for i, value := range h.registers {
-			if other.registers[i] > value {
-				value = other.registers[i]
-			}
-			Ebottom += math.Pow(2, -1.0*float64(value))
-			if value == 0 {
-				V += 1
-			}
-		}
-		return h.cardinalityNormalCorrected(Ebottom, V), nil
-	} else if h.format == NORMAL && other.format == SPARSE {
-		var V int
-		other.mergeSparse()
-		registerOther := make([]uint8, h.m1)
-		for _, value := range other.sparseList.Data {
-			index, rho := DecodeHash(value, other.P)
-			if registerOther[index] < rho {
-				registerOther[index] = rho
-			}
-		}
-		Ebottom := 0.0
-		for i, value := range h.registers {
-			if registerOther[i] > value {
-				value = registerOther[i]
-			}
-			Ebottom += math.Pow(2, -1.0*float64(value))
-			if value == 0 {
-				V += 1
-			}
-		}
-		registerOther = registerOther[:0]
-		return h.cardinalityNormalCorrected(Ebottom, V), nil
-	} else if h.format == SPARSE && other.format == NORMAL {
-		return other.UnionCardinality(h)
-	} else if h.format == SPARSE && other.format == SPARSE {
-		h.mergeSparse()
-		other.mergeSparse()
-		if h.sparseList.Len() == 0 {
-			return other.Cardinality(), nil
-		} else if other.sparseList.Len() == 0 {
-			return h.Cardinality(), nil
-		}
-		var i, j, V int
-		var idxH, idxOther uint32
-		for i < h.sparseList.Len()-1 || j < other.sparseList.Len()-1 {
-			if i < h.sparseList.Len() {
-				idxH = GetIndexSparse(h.sparseList.Get(i))
-			}
-			if j < other.sparseList.Len() {
-				idxOther = GetIndexSparse(other.sparseList.Get(j))
-			}
-			V += 1
-			if idxH < idxOther {
-				i += 1
-			} else if idxH > idxOther {
-				j += 1
-			} else {
-				i += 1
-				j += 1
-			}
-		}
-		return LinearCounting(h.m2, int(h.m2)-V), nil
+	A := h.Cardinality()
+	B := other.Cardinality()
+	AuB, _ := h.CardinalityUnion(other)
+	return A + B - AuB, nil
+}
+
+func (h *HLL) CardinalityUnion(other *HLL) (float64, error) {
+	if h.P != other.P {
+		return 0.0, SamePError
 	}
-	return 0.0, nil
+	cardinality := 0.0
+	if h.format == NORMAL && other.format == NORMAL {
+		cardinality = h.cardinalityUnionNN(other)
+	} else if h.format == NORMAL && other.format == SPARSE {
+		cardinality = h.cardinalityUnionNS(other)
+	} else if h.format == SPARSE && other.format == NORMAL {
+		cardinality, _ = other.CardinalityUnion(h)
+	} else if h.format == SPARSE && other.format == SPARSE {
+		cardinality = h.cardinalityUnionSS(other)
+	}
+	return cardinality, nil
+}
+
+func (h *HLL) cardinalityUnionNN(other *HLL) float64 {
+	var V int
+	Ebottom := 0.0
+	for i, value := range h.registers {
+		if other.registers[i] > value {
+			value = other.registers[i]
+		}
+		Ebottom += math.Pow(2, -1.0*float64(value))
+		if value == 0 {
+			V += 1
+		}
+	}
+	return h.cardinalityNormalCorrected(Ebottom, V)
+}
+
+func (h *HLL) cardinalityUnionNS(other *HLL) float64 {
+	var V int
+	other.mergeSparse()
+	registerOther := make([]uint8, h.m1)
+	for _, value := range other.sparseList.Data {
+		index, rho := DecodeHash(value, other.P)
+		if registerOther[index] < rho {
+			registerOther[index] = rho
+		}
+	}
+	Ebottom := 0.0
+	for i, value := range h.registers {
+		if registerOther[i] > value {
+			value = registerOther[i]
+		}
+		Ebottom += math.Pow(2, -1.0*float64(value))
+		if value == 0 {
+			V += 1
+		}
+	}
+	registerOther = registerOther[:0]
+	return h.cardinalityNormalCorrected(Ebottom, V)
+}
+
+func (h *HLL) cardinalityUnionSS(other *HLL) float64 {
+	h.mergeSparse()
+	other.mergeSparse()
+	if h.sparseList.Len() == 0 {
+		return other.Cardinality()
+	} else if other.sparseList.Len() == 0 {
+		return h.Cardinality()
+	}
+	var i, j, V int
+	var idxH, idxOther uint32
+	for i < h.sparseList.Len()-1 || j < other.sparseList.Len()-1 {
+		if i < h.sparseList.Len() {
+			idxH = GetIndexSparse(h.sparseList.Get(i))
+		}
+		if j < other.sparseList.Len() {
+			idxOther = GetIndexSparse(other.sparseList.Get(j))
+		}
+		V += 1
+		if idxH < idxOther {
+			i += 1
+		} else if idxH > idxOther {
+			j += 1
+		} else {
+			i += 1
+			j += 1
+		}
+	}
+	return LinearCounting(h.m2, int(h.m2)-V)
 }

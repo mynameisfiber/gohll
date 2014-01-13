@@ -16,7 +16,7 @@ func checkErrorBounds(t *testing.T, c, i, errorRate float64) {
 }
 
 func TestHolistic(t *testing.T) {
-	h, err := NewHLL(6)
+	h, err := NewHLL(10)
 	assert.Nil(t, err)
 	errorRate := 1.04 / math.Sqrt(float64(h.m1))
 
@@ -89,7 +89,7 @@ func TestUnionNormalNormal(t *testing.T) {
 	h1.toNormal()
 	h2.toNormal()
 
-	testUnion(t, h1, h2)
+	testSetOperations(t, h1, h2)
 }
 
 func TestUnionNormalSparse(t *testing.T) {
@@ -102,7 +102,7 @@ func TestUnionNormalSparse(t *testing.T) {
 	h1.toNormal()
 	h2.sparseList.MaxSize = 1e10
 
-	testUnion(t, h1, h2)
+	testSetOperations(t, h1, h2)
 }
 
 func TestUnionSparseNormal(t *testing.T) {
@@ -115,7 +115,7 @@ func TestUnionSparseNormal(t *testing.T) {
 	h1.sparseList.MaxSize = 1e10
 	h2.toNormal()
 
-	testUnion(t, h1, h2)
+	testSetOperations(t, h1, h2)
 	assert.Equal(t, h1.format, NORMAL, "Did not convert h1 to normal mode")
 }
 
@@ -129,27 +129,30 @@ func TestUnionSparseSparse(t *testing.T) {
 	h1.sparseList.MaxSize = 1e10
 	h2.sparseList.MaxSize = 1e10
 
-	testUnion(t, h1, h2)
+	testSetOperations(t, h1, h2)
 }
 
-func testUnion(t *testing.T, h1, h2 *HLL) {
+func testSetOperations(t *testing.T, h1, h2 *HLL) {
 	var i float64
 	h1Format := h1.format
-	for i = 0; i <= 50000; i += 1 {
+	for i = 0; i <= 75000; i += 1 {
 		h1.Add(fmt.Sprintf("%d", i))
 	}
 	assert.Equal(t, h1Format, h1.format)
 
 	h2Format := h2.format
-	for i = 50000; i <= 100000; i += 1 {
+	for i = 25000; i <= 100000; i += 1 {
 		h2.Add(fmt.Sprintf("%d", i))
 	}
 	assert.Equal(t, h2Format, h2.format)
 
 	errorRate := 1.04 / math.Sqrt(float64(h1.m1))
 
-	c, _ := h1.UnionCardinality(h2)
+	c, _ := h1.CardinalityUnion(h2)
 	checkErrorBounds(t, c, i, errorRate)
+
+	c, _ = h1.CardinalityIntersection(h2)
+	checkErrorBounds(t, c, 50000, errorRate)
 
 	h1.Union(h2)
 	c = h1.Cardinality()
