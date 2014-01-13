@@ -7,6 +7,7 @@ go:
 
 install:
   - go get github.com/reusee/mmh3
+  - go get github.com/stretchr/testify/assert
 
 script:
   - go test -v ./...
