@@ -5,10 +5,9 @@ import (
 )
 
 type MergableList interface {
-    sort.Interface
-    Get(int) uint32
+	sort.Interface
+	Get(int) uint32
 }
-    
 
 type SparseList struct {
 	Data    []uint32
@@ -56,7 +55,7 @@ func (sl *SparseList) Swap(i, j int) {
 }
 
 func (sl *SparseList) Get(i int) uint32 {
-    return sl.Data[i]
+	return sl.Data[i]
 }
 
 func (sl *SparseList) Clear() {
@@ -82,9 +81,9 @@ func (sl *SparseList) Merge(tmpList MergableList) {
 
 	slDirty := false
 	var lastTmpIndex uint32
-    var value uint32
-    for i := 0; i < tmpList.Len(); i++ {
-        value = tmpList.Get(i)
+	var value uint32
+	for i := 0; i < tmpList.Len(); i++ {
+		value = tmpList.Get(i)
 		tmpIndex := GetIndexSparse(value)
 		if tmpIndex == lastTmpIndex && i != 0 {
 			continue

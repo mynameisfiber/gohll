@@ -3,8 +3,8 @@ package gohll
 import (
 	"github.com/stretchr/testify/assert"
 	"math"
+	"math/rand"
 	"testing"
-    "math/rand"
 )
 
 func TestEncodeHash(t *testing.T) {
@@ -20,12 +20,12 @@ func TestDecodeHash(t *testing.T) {
 	x := uint32(0xffffffff - 1)
 	index, rho := DecodeHash(x, p1)
 
-	assert.Equal(t, rho, uint8(0), "Did not decode rho properly")
+	assert.Equal(t, rho, uint8(1), "Did not decode rho properly")
 	assert.Equal(t, index, uint32(0xfff), "Did not decode index properly")
 
 	x = uint32(0xffffff00)
 	index, rho = DecodeHash(x, p1)
-	assert.Equal(t, rho, uint8(0), "Did not decode rho properly")
+	assert.Equal(t, rho, uint8(1), "Did not decode rho properly")
 	assert.Equal(t, index, uint32(0xfff), "Did not decode index properly")
 }
 
@@ -38,7 +38,7 @@ func TestEncodeDecode1(t *testing.T) {
 	index, rho := DecodeHash(encoded, p1)
 
 	assert.Equal(t, index, uint32(0x0f0), "Incorrect index")
-	assert.Equal(t, rho, uint8(4), "Incorrect rho")
+	assert.Equal(t, rho, uint8(4)+1, "Incorrect rho")
 }
 
 func TestEncodeDecode2(t *testing.T) {
@@ -50,25 +50,25 @@ func TestEncodeDecode2(t *testing.T) {
 	index, rho := DecodeHash(encoded, p1)
 
 	assert.Equal(t, index, uint32(0x0f0), "Incorrect index")
-	assert.Equal(t, rho, uint8(16), "Incorrect rho")
+	assert.Equal(t, rho, uint8(16)+1, "Incorrect rho")
 }
 
 func TestEncodeDecode3(t *testing.T) {
-    p := uint8(4)
-    var hash uint64
-    for i := 0; i < 100; i += 1 {
-        hash = uint64(rand.Uint32()) << 32 + uint64(rand.Uint32())
+	p := uint8(4)
+	var hash uint64
+	for i := 0; i < 100; i += 1 {
+		hash = uint64(rand.Uint32())<<32 + uint64(rand.Uint32())
 
-	    index := SliceUint64(hash, 63, 64-p)
-	    w := SliceUint64(hash, 63-p, 0) << p
-	    rho := LeadingBitUint64(w)
+		index := SliceUint64(hash, 63, 64-p)
+		w := SliceUint64(hash, 63-p, 0) << p
+		rho := LeadingBitUint64(w) + 1
 
-        e := EncodeHash(hash, p)
-        edIndex, edRho := DecodeHash(e, p)
+		e := EncodeHash(hash, p)
+		edIndex, edRho := DecodeHash(e, p)
 
-        assert.Equal(t, edIndex, index, "Incorrect index")
-        assert.Equal(t, edRho, rho, "Incorrect index")
-    }
+		assert.Equal(t, edIndex, index, "Incorrect index")
+		assert.Equal(t, edRho, rho, "Incorrect index")
+	}
 }
 
 func TestEstimateBias(t *testing.T) {

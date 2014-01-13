@@ -18,7 +18,7 @@ const (
 
 var (
 	InvalidPError = errors.New("Invalid value of P, must be 4<=p<=25")
-    SamePError = errors.New("Both HLL instances must have the same value of P")
+	SamePError    = errors.New("Both HLL instances must have the same value of P")
 )
 
 func MMH3Hash(value string) uint64 {
@@ -41,8 +41,8 @@ type HLL struct {
 	alpha  float64
 	format byte
 
-	tempSet          *TempSet
-	sparseList       *SparseList
+	tempSet    *TempSet
+	sparseList *SparseList
 
 	registers []uint8
 }
@@ -69,21 +69,21 @@ func NewHLL(p uint8) (*HLL, error) {
 
 	format := SPARSE
 
-    // Since HLL.registers is a uint8 slice and the SparseList is a uint32
-    // slice, we switch from sparse to normal with the sparse list is |m1/4| in
-    // size (ie: the same size as the registers would be.
-	sparseList := NewSparseList(p, int(m1 * 6))
-	tempSet := make(TempSet, 0, int(m1 / 8))
+	// Since HLL.registers is a uint8 slice and the SparseList is a uint32
+	// slice, we switch from sparse to normal with the sparse list is |m1/4| in
+	// size (ie: the same size as the registers would be.
+	sparseList := NewSparseList(p, int(m1/4))
+	tempSet := make(TempSet, 0, int(m1/8))
 
 	return &HLL{
-		P:                p,
-		Hasher:           MMH3Hash,
-		m1:               m1,
-		m2:               m2,
-		alpha:            alpha,
-		format:           format,
-		tempSet:          &tempSet,
-		sparseList:       sparseList,
+		P:          p,
+		Hasher:     MMH3Hash,
+		m1:         m1,
+		m2:         m2,
+		alpha:      alpha,
+		format:     format,
+		tempSet:    &tempSet,
+		sparseList: sparseList,
 	}, nil
 }
 
@@ -100,7 +100,7 @@ func (h *HLL) Add(value string) {
 func (h *HLL) addNormal(hash uint64) {
 	index := SliceUint64(hash, 63, 64-h.P)
 	w := SliceUint64(hash, 63-h.P, 0) << h.P
-	rho := LeadingBitUint64(w)
+	rho := LeadingBitUint64(w) + 1
 	if h.registers[index] < rho {
 		h.registers[index] = rho
 	}
@@ -112,18 +112,18 @@ func (h *HLL) addSparse(hash uint64) {
 	if h.tempSet.Full() {
 		h.mergeSparse()
 	}
-    h.checkModeChange()
+	h.checkModeChange()
 }
 
 func (h *HLL) mergeSparse() {
-    h.sparseList.Merge(h.tempSet)
-    h.tempSet.Clear()
+	h.sparseList.Merge(h.tempSet)
+	h.tempSet.Clear()
 }
 
 func (h *HLL) checkModeChange() {
-    if h.sparseList.Full() {
-    	h.toNormal()
-    }
+	if h.sparseList.Full() {
+		h.toNormal()
+	}
 }
 
 func (h *HLL) toNormal() {
@@ -158,20 +158,19 @@ func (h *HLL) Cardinality() float64 {
 
 func (h *HLL) cardinalityNormal() float64 {
 	var V int
-	Etop := h.alpha * float64(h.m1*h.m1)
 	Ebottom := 0.0
 	for _, value := range h.registers {
-		Ebottom += math.Pow(2, -1.0*float64(value+1))
+		Ebottom += math.Pow(2, -1.0*float64(value))
 		if value == 0 {
 			V += 1
 		}
 	}
-	E := Etop / Ebottom
 
-    return h.cardinalityNormalCorrected(E, V)
+	return h.cardinalityNormalCorrected(Ebottom, V)
 }
 
-func (h *HLL) cardinalityNormalCorrected(E float64, V int) float64 {
+func (h *HLL) cardinalityNormalCorrected(Ebottom float64, V int) float64 {
+	E := h.alpha * float64(h.m1*h.m1) / Ebottom
 	var Eprime float64
 	if E < 5*float64(h.m1) {
 		Eprime = E - EstimateBias(E, h.P)
@@ -202,38 +201,104 @@ func (h *HLL) cardinalitySparse() float64 {
 }
 
 func (h *HLL) Union(other *HLL) error {
-    if h.P != other.P {
-        return SamePError
-    }
-    if other.format == NORMAL {
-        if h.format == SPARSE {
-            h.toNormal()
-        }
-        for i := uint(0); i < h.m1; i++ {
-            if other.registers[i] > h.registers[i] {
-                h.registers[i] = other.registers[i]
-            }
-        }
-    } else if h.format == NORMAL && other.format == SPARSE {
-	    other.mergeSparse()
-	    for _, value := range other.sparseList.Data {
-	    	index, rho := DecodeHash(value, h.P)
-	    	if h.registers[index] < rho {
-	    		h.registers[index] = rho
-	    	}
-	    }
-    } else if h.format == SPARSE && other.format == SPARSE {
-        h.mergeSparse()
-        other.mergeSparse()
-        h.sparseList.Merge(other.sparseList)
-        h.checkModeChange()
-    }
-    return nil
+	if h.P != other.P {
+		return SamePError
+	}
+	if other.format == NORMAL {
+		if h.format == SPARSE {
+			h.toNormal()
+		}
+		for i := uint(0); i < h.m1; i++ {
+			if other.registers[i] > h.registers[i] {
+				h.registers[i] = other.registers[i]
+			}
+		}
+	} else if h.format == NORMAL && other.format == SPARSE {
+		other.mergeSparse()
+		for _, value := range other.sparseList.Data {
+			index, rho := DecodeHash(value, h.P)
+			if h.registers[index] < rho {
+				h.registers[index] = rho
+			}
+		}
+	} else if h.format == SPARSE && other.format == SPARSE {
+		h.mergeSparse()
+		other.mergeSparse()
+		h.sparseList.Merge(other.sparseList)
+		h.checkModeChange()
+	}
+	return nil
 }
 
-func (h *HLL) UnionCardinality(other *HLL) error {
-    if h.P != other.P {
-        return SamePError
-    }
-    return nil
+func (h *HLL) UnionCardinality(other *HLL) (float64, error) {
+	if h.P != other.P {
+		return 0.0, SamePError
+	}
+	if h.format == NORMAL && other.format == NORMAL {
+		var V int
+		Ebottom := 0.0
+		for i, value := range h.registers {
+			if other.registers[i] > value {
+				value = other.registers[i]
+			}
+			Ebottom += math.Pow(2, -1.0*float64(value))
+			if value == 0 {
+				V += 1
+			}
+		}
+		return h.cardinalityNormalCorrected(Ebottom, V), nil
+	} else if h.format == NORMAL && other.format == SPARSE {
+		var V int
+		other.mergeSparse()
+		registerOther := make([]uint8, h.m1)
+		for _, value := range other.sparseList.Data {
+			index, rho := DecodeHash(value, other.P)
+			if registerOther[index] < rho {
+				registerOther[index] = rho
+			}
+		}
+		Ebottom := 0.0
+		for i, value := range h.registers {
+			if registerOther[i] > value {
+				value = registerOther[i]
+			}
+			Ebottom += math.Pow(2, -1.0*float64(value))
+			if value == 0 {
+				V += 1
+			}
+		}
+		registerOther = registerOther[:0]
+		return h.cardinalityNormalCorrected(Ebottom, V), nil
+	} else if h.format == SPARSE && other.format == NORMAL {
+		return other.UnionCardinality(h)
+	} else if h.format == SPARSE && other.format == SPARSE {
+		h.mergeSparse()
+		other.mergeSparse()
+		if h.sparseList.Len() == 0 {
+			return other.Cardinality(), nil
+		} else if other.sparseList.Len() == 0 {
+			return h.Cardinality(), nil
+		}
+		var i, j, V int
+		var idxH, idxOther uint32
+		for i < h.sparseList.Len()-1 || j < other.sparseList.Len()-1 {
+			if i < h.sparseList.Len() {
+				idxH = GetIndexSparse(h.sparseList.Get(i))
+			}
+			if j < other.sparseList.Len() {
+				idxOther = GetIndexSparse(other.sparseList.Get(j))
+			}
+			V += 1
+			if idxH < idxOther {
+				i += 1
+			} else if idxH > idxOther {
+				j += 1
+			} else {
+				i += 1
+				j += 1
+			}
+		}
+		return LinearCounting(h.m2, int(h.m2)-V), nil
+	}
+	return 0.0, nil
 }

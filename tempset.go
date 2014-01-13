@@ -1,16 +1,15 @@
 package gohll
 
-import (
-)
+import ()
 
 type TempSet []uint32
 
 func (ts TempSet) Len() int {
-    return len(ts)
+	return len(ts)
 }
 
 func (ts TempSet) Swap(i, j int) {
-    ts[i], ts[j] = ts[j], ts[i]
+	ts[i], ts[j] = ts[j], ts[i]
 }
 
 func (ts TempSet) Less(i, j int) bool {
@@ -29,18 +28,18 @@ func (ts TempSet) Less(i, j int) bool {
 }
 
 func (ts TempSet) Get(i int) uint32 {
-    return ts[i]
+	return ts[i]
 }
 
 func (ts TempSet) Clear() {
-    ts = ts[0:0]
+	ts = ts[0:0]
 }
 
 func (ts TempSet) Append(value uint32) *TempSet {
-    newTs := append(ts, value)
-    return &newTs
+	newTs := append(ts, value)
+	return &newTs
 }
 
 func (ts TempSet) Full() bool {
-    return len(ts) == cap(ts)
+	return len(ts) == cap(ts)
 }
