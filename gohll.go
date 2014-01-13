@@ -201,9 +201,6 @@ func (h *HLL) cardinalityNormalCorrected(Ebottom float64, V int) float64 {
 }
 
 func (h *HLL) cardinalitySparse() float64 {
-	if h.sparseList.Len() == 0 {
-		return float64(h.tempSet.Len())
-	}
 	h.mergeSparse()
 	return LinearCounting(h.m2, int(h.m2)-h.sparseList.Len())
 }
