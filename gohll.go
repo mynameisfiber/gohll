@@ -17,9 +17,9 @@ const (
 )
 
 var (
-	InvalidPError = errors.New("Invalid value of P, must be 4<=p<=25")
-	SamePError    = errors.New("Both HLL instances must have the same value of P")
-    ErrorRateOutOfBounds = errors.New("Error rate must be 0.26>=errorRate>=0.00025390625")
+	InvalidPError        = errors.New("Invalid value of P, must be 4<=p<=25")
+	SamePError           = errors.New("Both HLL instances must have the same value of P")
+	ErrorRateOutOfBounds = errors.New("Error rate must be 0.26>=errorRate>=0.00025390625")
 )
 
 func MMH3Hash(value string) uint64 {
@@ -49,11 +49,11 @@ type HLL struct {
 }
 
 func NewHLLByError(errorRate float64) (*HLL, error) {
-    if errorRate < 0.00025390625 || errorRate > 0.26 {
-        return nil, ErrorRateOutOfBounds
-    }
-    p = uint8(math.Ceil(math.Log2(math.Pow(1.04 / errorRate, 2))))
-    return NewHLL(p)
+	if errorRate < 0.00025390625 || errorRate > 0.26 {
+		return nil, ErrorRateOutOfBounds
+	}
+	p := uint8(math.Ceil(math.Log2(math.Pow(1.04/errorRate, 2))))
+	return NewHLL(p)
 }
 
 func NewHLL(p uint8) (*HLL, error) {

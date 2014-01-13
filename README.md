@@ -88,5 +88,8 @@ structure.
 
 ## Resources
 
+* [Original Paper][1]
+* [Great blog post on HLL++][2]
+
 [1]: http://static.googleusercontent.com/external_content/untrusted_dlcp/research.google.com/en/us/pubs/archive/40671.pdf
 [2]: http://blog.aggregateknowledge.com/2013/01/24/hyperloglog-googles-take-on-engineering-hll/
