@@ -17,12 +17,12 @@ const (
 )
 
 var (
-	InvalidPError        = errors.New("Invalid value of P, must be 4<=p<=25")
-	SamePError           = errors.New("Both HLL instances must have the same value of P")
-	ErrorRateOutOfBounds = errors.New("Error rate must be 0.26>=errorRate>=0.00025390625")
+	ErrInvalidP             = errors.New("invalid value of P, must be 4<=p<=25")
+	ErrSameP                = errors.New("both HLL instances must have the same value of P")
+	ErrErrorRateOutOfBounds = errors.New("error rate must be 0.26>=errorRate>=0.00025390625")
 )
 
-// The default hasher uses murmurhash and return a uint64
+// MMH3Hash is the default hasher and uses murmurhash to return a uint64
 func MMH3Hash(value string) uint64 {
 	hashBytes := mmh3.Hash128([]byte(value))
 	var hash uint64
@@ -53,7 +53,7 @@ type HLL struct {
 // The error must be between 26% and 0.0253%
 func NewHLLByError(errorRate float64) (*HLL, error) {
 	if errorRate < 0.00025390625 || errorRate > 0.26 {
-		return nil, ErrorRateOutOfBounds
+		return nil, ErrErrorRateOutOfBounds
 	}
 	p := uint8(math.Ceil(math.Log2(math.Pow(1.04/errorRate, 2))))
 	return NewHLL(p)
@@ -63,7 +63,7 @@ func NewHLLByError(errorRate float64) (*HLL, error) {
 // 25
 func NewHLL(p uint8) (*HLL, error) {
 	if p < 4 || p > 25 {
-		return nil, InvalidPError
+		return nil, ErrInvalidP
 	}
 
 	m1 := uint(1 << p)
@@ -221,7 +221,7 @@ func (h *HLL) cardinalitySparse() float64 {
 // Union will merge all data in another HLL object into this one.
 func (h *HLL) Union(other *HLL) error {
 	if h.P != other.P {
-		return SamePError
+		return ErrSameP
 	}
 	if other.format == NORMAL {
 		if h.format == SPARSE {
@@ -256,7 +256,7 @@ func (h *HLL) Union(other *HLL) error {
 // does not satisfy the error guarantee.
 func (h *HLL) CardinalityIntersection(other *HLL) (float64, error) {
 	if h.P != other.P {
-		return 0.0, SamePError
+		return 0.0, ErrSameP
 	}
 	A := h.Cardinality()
 	B := other.Cardinality()
@@ -271,7 +271,7 @@ func (h *HLL) CardinalityIntersection(other *HLL) (float64, error) {
 // object.
 func (h *HLL) CardinalityUnion(other *HLL) (float64, error) {
 	if h.P != other.P {
-		return 0.0, SamePError
+		return 0.0, ErrSameP
 	}
 	cardinality := 0.0
 	if h.format == NORMAL && other.format == NORMAL {
