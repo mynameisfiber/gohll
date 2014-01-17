@@ -87,7 +87,7 @@ func (sl *SparseList) Merge(tmpList MergableList) {
 		if tmpIndex == lastTmpIndex && i != 0 {
 			continue
 		}
-		if tmpIndex > slIndex {
+		if !slStopIteration && tmpIndex > slIndex {
 			for tmpIndex > slIndex {
 				sli += 1
 				if sli >= sl.Len() {

@@ -120,8 +120,8 @@ func (h *HLL) addSparse(hash uint64) {
 	h.tempSet = h.tempSet.Append(k)
 	if h.tempSet.Full() {
 		h.mergeSparse()
+		h.checkModeChange()
 	}
-	h.checkModeChange()
 }
 
 func (h *HLL) mergeSparse() {
@@ -131,11 +131,14 @@ func (h *HLL) mergeSparse() {
 
 func (h *HLL) checkModeChange() {
 	if h.sparseList.Full() {
-		h.toNormal()
+		h.ToNormal()
 	}
 }
 
-func (h *HLL) toNormal() {
+func (h *HLL) ToNormal() {
+	if h.format != SPARSE {
+		return
+	}
 	h.format = NORMAL
 	h.registers = make([]uint8, h.m1)
 	for _, value := range h.sparseList.Data {
@@ -211,7 +214,7 @@ func (h *HLL) Union(other *HLL) error {
 	}
 	if other.format == NORMAL {
 		if h.format == SPARSE {
-			h.toNormal()
+			h.ToNormal()
 		}
 		for i := uint(0); i < h.m1; i++ {
 			if other.registers[i] > h.registers[i] {

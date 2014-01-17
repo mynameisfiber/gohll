@@ -89,7 +89,7 @@ amounts of memory in order to get exact solutions?  Typically the answer is no.
 I've been throwing around the words HLL and HLL++ as if they were the same
 thing.  Let's talk a bit about how they are different.
 
-HLL++ is an extention to HLL (first talked about in [this][1] paper) that gives
+HLL++ is an extension to HLL (first talked about in [this][1] paper) that gives
 it better biasing properties and _much_ better error rates for small set sizes
 without increasing memory usage.  The biasing issue is addressed by some
 experiments that were run that gave quantitative numbers as to how the HLL's
@@ -105,6 +105,33 @@ In addition, this list _could_ be compressed easily to allow us to use this
 encoding much longer.  Once enough items have been placed into the HLL, the
 integer encoding is reversed and we insert the old data into a classic HLL
 structure.
+
+## Speed
+
+This library is fast!  With an error rate of __0.1%__ (ie: `p=20`), while in
+the sparse regime (ie: small number of items compared to the error rate
+chosen), we can accomplish about __222,200__ insertions per second on a 2011
+Macbook Air.  For the normal regime (ie: large number of items) we accomplish
+__708,215__ insertions per second on the same hardware!  Furthermore,
+cardinality queries (ie: asking "how many unique elements are in this HLL?")
+are quite quick.  While they depend on many subtleties regarding the state of
+the HLL, they have an upper bound of __7ms__ per query (average of __2ms__) for
+the same setup.
+
+It may seem that strange that it is slower to add items to the HLL while it is
+less full, but this makes sense since we go to extra lengths and have a
+different insertion model when there aren't many items in order to fulfill the
+error guarantees.
+
+If you care more about insertion speed than you do having good error bounds
+when the HLL is still relatively empty, simply call `h.ToNormal()` on the HLL
+once you have instantiated it in order to skip the sparse phase.  This would be
+desirable if you are pre-loading the HLL with a lot of data and know that once
+the loading is done, it will be out of the sparse phase anyways (so you may as
+well get 4x faster insertion speeds to that your loading procedure finishes
+faster!).
+
+Benchmarks can be run with `go test --bench=.`
 
 ## Resources
 

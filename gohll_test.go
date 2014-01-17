@@ -15,6 +15,52 @@ func checkErrorBounds(t *testing.T, c, i, errorRate float64) {
 	}
 }
 
+func BenchmarkAddSparse(b *testing.B) {
+	h, _ := NewHLL(20)
+	h.sparseList.MaxSize = 1e8
+
+	b.ResetTimer()
+	for i := 0; i <= b.N; i += 1 {
+		h.Add(fmt.Sprintf("%d", i))
+	}
+}
+
+func BenchmarkAddNormal(b *testing.B) {
+	h, _ := NewHLL(20)
+	h.ToNormal()
+
+	b.ResetTimer()
+	for i := 0; i <= b.N; i += 1 {
+		h.Add(fmt.Sprintf("%d", i))
+	}
+}
+
+func BenchmarkCardinalityNormal(b *testing.B) {
+	h, _ := NewHLL(20)
+	h.ToNormal()
+	for i := 0; i <= 10000; i += 1 {
+		h.Add(fmt.Sprintf("%d", i))
+	}
+
+	b.ResetTimer()
+	for i := 0; i <= b.N; i += 1 {
+		h.Cardinality()
+	}
+}
+
+func BenchmarkCardinalitySparse(b *testing.B) {
+	h, _ := NewHLL(20)
+	h.sparseList.MaxSize = 1e8
+	for i := 0; i <= 10000; i += 1 {
+		h.Add(fmt.Sprintf("%d", i))
+	}
+
+	b.ResetTimer()
+	for i := 0; i <= b.N; i += 1 {
+		h.Cardinality()
+	}
+}
+
 func TestHolistic(t *testing.T) {
 	h, err := NewHLL(10)
 	assert.Nil(t, err)
@@ -51,7 +97,7 @@ func TestNormal(t *testing.T) {
 	h, err := NewHLL(10)
 	assert.Nil(t, err)
 
-	h.toNormal()
+	h.ToNormal()
 	var i float64
 	for i = 0; i <= 100000; i += 1 {
 		h.Add(fmt.Sprintf("%d-%d", i, rand.Uint32()))
@@ -86,8 +132,8 @@ func TestUnionNormalNormal(t *testing.T) {
 	h2, err := NewHLL(10)
 	assert.Nil(t, err)
 
-	h1.toNormal()
-	h2.toNormal()
+	h1.ToNormal()
+	h2.ToNormal()
 
 	testSetOperations(t, h1, h2)
 }
@@ -99,7 +145,7 @@ func TestUnionNormalSparse(t *testing.T) {
 	h2, err := NewHLL(10)
 	assert.Nil(t, err)
 
-	h1.toNormal()
+	h1.ToNormal()
 	h2.sparseList.MaxSize = 1e8
 
 	testSetOperations(t, h1, h2)
@@ -113,7 +159,7 @@ func TestUnionSparseNormal(t *testing.T) {
 	assert.Nil(t, err)
 
 	h1.sparseList.MaxSize = 1e8
-	h2.toNormal()
+	h2.ToNormal()
 
 	testSetOperations(t, h1, h2)
 	assert.Equal(t, h1.format, NORMAL, "Did not convert h1 to normal mode")
