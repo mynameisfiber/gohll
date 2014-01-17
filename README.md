@@ -1,6 +1,7 @@
 # GoHLL
 
 [![build status](https://travis-ci.org/mynameisfiber/gohll.png?branch=master)](https://travis-ci.org/mynameisfiber/gohll)
+[![GoDoc](https://godoc.org/github.com/mynameisfiber/gohll?status.png)](https://godoc.org/github.com/mynameisfiber/gohll)
 
 > [HLL++][1] for gophers
 

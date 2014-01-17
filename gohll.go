@@ -49,8 +49,8 @@ type HLL struct {
 	registers []uint8
 }
 
-// Create a new HLL object with error rate given by `errorRate`.  The error
-// must be between 26% and 0.0253%
+// NewHLLByError creates a new HLL object with error rate given by `errorRate`.
+// The error must be between 26% and 0.0253%
 func NewHLLByError(errorRate float64) (*HLL, error) {
 	if errorRate < 0.00025390625 || errorRate > 0.26 {
 		return nil, ErrorRateOutOfBounds
@@ -59,7 +59,8 @@ func NewHLLByError(errorRate float64) (*HLL, error) {
 	return NewHLL(p)
 }
 
-// Create a new HLL object given a normal mode precision between 4 and 25
+// NewHLL creates a new HLL object given a normal mode precision between 4 and
+// 25
 func NewHLL(p uint8) (*HLL, error) {
 	if p < 4 || p > 25 {
 		return nil, InvalidPError
@@ -100,7 +101,8 @@ func NewHLL(p uint8) (*HLL, error) {
 	}, nil
 }
 
-// Add the given string value to the HLL
+// Add will add the given string value to the HLL using the currently set
+// Hasher function
 func (h *HLL) Add(value string) {
 	hash := h.Hasher(value)
 	switch h.format {
@@ -140,8 +142,8 @@ func (h *HLL) checkModeChange() {
 	}
 }
 
-// If the current HLL is in sparse mode, this function will convert it into
-// normal mode, maintaining all data already inserted into the object
+// ToNormal will convert the current HLL to normal mode, maintaining any data
+// already inserted into the structure, if it is in sparse mode
 func (h *HLL) ToNormal() {
 	if h.format != SPARSE {
 		return
@@ -164,7 +166,7 @@ func (h *HLL) ToNormal() {
 	h.sparseList.Clear()
 }
 
-// Returns the estimated cardinality of the current HLL object
+// Cardinality returns the estimated cardinality of the current HLL object
 func (h *HLL) Cardinality() float64 {
 	var cardinality float64
 	switch h.format {
@@ -216,7 +218,7 @@ func (h *HLL) cardinalitySparse() float64 {
 	return LinearCounting(h.m2, int(h.m2)-h.sparseList.Len())
 }
 
-// Merge all data in another HLL abject into this one.
+// Union will merge all data in another HLL abject into this one.
 func (h *HLL) Union(other *HLL) error {
 	if h.P != other.P {
 		return SamePError
@@ -247,10 +249,11 @@ func (h *HLL) Union(other *HLL) error {
 	return nil
 }
 
-// Return the estimated cardinality of the intersection between this HLL object
-// and another one.  That is, it returns an estimate of the number of unique
-// items that occure in both this and the other HLL object.  This is done with
-// the Inclusion–exclusion principle and does not satisfy the error guarentee.
+// CardinalityIntersection returns the estimated cardinality of the
+// intersection between this HLL object and another one.  That is, it returns
+// an estimate of the number of unique items that occur in both this and the
+// other HLL object.  This is done with the Inclusion–exclusion principle and
+// does not satisfy the error guarantee.
 func (h *HLL) CardinalityIntersection(other *HLL) (float64, error) {
 	if h.P != other.P {
 		return 0.0, SamePError
@@ -261,10 +264,11 @@ func (h *HLL) CardinalityIntersection(other *HLL) (float64, error) {
 	return A + B - AuB, nil
 }
 
-// Returns the estimated cardinality of the union between this and another HLL
-// object.  This result would be the same as first taking the union between
-// this and the other object and then calling Cardinality.  However, by calling
-// this function we are not making any changes to the HLL object.
+// CardinalityUnion returns the estimated cardinality of the union between this
+// and another HLL object.  This result would be the same as first taking the
+// union between this and the other object and then calling Cardinality.
+// However, by calling this function we are not making any changes to the HLL
+// object.
 func (h *HLL) CardinalityUnion(other *HLL) (float64, error) {
 	if h.P != other.P {
 		return 0.0, SamePError

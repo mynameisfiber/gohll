@@ -4,6 +4,9 @@ import (
 	"sort"
 )
 
+// Interface defining what objects are mergable with the SparseList object.
+// Note: it is assumed that this list is sorted in the same way as the
+// SparseList
 type MergableList interface {
 	sort.Interface
 	Get(int) uint32
@@ -61,10 +64,10 @@ func (sl *SparseList) Clear() {
 	sl.Data = sl.Data[0:0]
 }
 
-// Merges this sparse list with another mergable list.  This is done by having
-// the 32bit integers within the list sorted by it's encoded index and, if
-// another item with the same index exists, only keeping the one with the
-// largest number of leading zero bits (as given by LeadingBitUint32).
+// Merge will merge this sparse list with another mergable list.  This is done
+// by having the 32bit integers within the list sorted by it's encoded index
+// and, if another item with the same index exists, only keeping the one with
+// the largest number of leading zero bits (as given by LeadingBitUint32).
 //
 // NOTE: This function assumes that this list is already sorted with the given
 // Less() function
