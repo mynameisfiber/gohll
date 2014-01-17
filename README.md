@@ -133,6 +133,18 @@ faster!).
 
 Benchmarks can be run with `go test --bench=.`
 
+## Hashing functions
+
+"Isn't the entropy of your hashing function very important for the error
+estimates?" you may be asking.  Why, yes it is!  We choose to use murmurhash3's
+64bit hashing function by default, but this can be changed.  Simply create a
+new hashing function that takes in a string and outputs a `uint64` and set your
+HLL object's `Hasher` property to it.  This should only be done before you have
+inserted any items into the object!
+
+This is quite useful if you know a priori some properties of the data you will
+insert and can thus pick a more appropriate hashing function.
+
 ## Resources
 
 * [Original Paper][1]

@@ -4,6 +4,8 @@ import (
 	"math"
 )
 
+// Takes in a 64bit hash and the set precision and outputs a 32bit encoded hash
+// for use with the SparseList
 func EncodeHash(x uint64, p uint8) uint32 {
 	if SliceUint64(x, 63-p, 39) == 0 {
 		var result uint32
@@ -16,6 +18,9 @@ func EncodeHash(x uint64, p uint8) uint32 {
 	return uint32(x>>32) &^ 0x1
 }
 
+// Takes a 32bit hash which was encoded for use with the SparseList and
+// extracts the meaningful metadata from it using the normal mode precision
+// (namely it's index and location of it's leading set bit)
 func DecodeHash(x uint32, p uint8) (uint32, uint8) {
 	var r uint8
 	if x&0x1 == 1 {
@@ -27,29 +32,35 @@ func DecodeHash(x uint32, p uint8) (uint32, uint8) {
 
 }
 
+// Returns the normal mode precision (given by p) of an encoded hash
 func GetIndex(x uint32, p uint8) uint32 {
 	return SliceUint32(x, 31, 32-p)
 }
 
+// Returns the sparse mode index of the encoded hash
 func GetIndexSparse(x uint32) uint32 {
 	return x >> 7
 }
 
+// Performs linear counting given the number of registers, m1, and the number
+// of empty registers, V
 func LinearCounting(m1 uint, V int) float64 {
 	return float64(m1) * math.Log(float64(m1)/float64(V))
 }
 
+// Estimates the amount of bias in a normal mode cardinality query with an
+// estimator value of E and a normal mode precision of p
 func EstimateBias(E float64, p uint8) float64 {
 	if p > 18 {
 		return 0.0
 	}
-	estimateVector := RawEstimateData[p-4]
+	estimateVector := rawEstimateData[p-4]
 	N := len(estimateVector)
 	if E < estimateVector[0] || E > estimateVector[N-1] {
 		return 0.0
 	}
 
-	biasVector := BiasData[p-4]
+	biasVector := biasData[p-4]
 
 	for i, v := range estimateVector[1:] {
 		if v == E {
@@ -69,7 +80,7 @@ func linearInterpolation(x, y []float64, x0 float64) float64 {
 	return y[0] + (y[1]-y[0])*(x0-x[0])/(x[1]-x[0])
 }
 
-func Threshold(p uint8) float64 {
+func threshold(p uint8) float64 {
 	switch p {
 	case 4:
 		return 10
