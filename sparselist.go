@@ -4,39 +4,39 @@ import (
 	"sort"
 )
 
-// Interface defining what objects are mergable with the SparseList object.
+// Interface defining what objects are mergable with the sparseList object.
 // Note: it is assumed that this list is sorted in the same way as the
-// SparseList
-type MergableList interface {
+// sparseList
+type mergableList interface {
 	sort.Interface
 	Get(int) uint32
 }
 
-type SparseList struct {
+type sparseList struct {
 	Data    []uint32
 	P       uint8
 	MaxSize int
 }
 
-func NewSparseList(p uint8, capacity int) *SparseList {
-	return &SparseList{
+func newSparseList(p uint8, capacity int) *sparseList {
+	return &sparseList{
 		Data:    make([]uint32, 0, capacity),
 		P:       p,
 		MaxSize: capacity,
 	}
 }
 
-func (sl *SparseList) Len() int {
+func (sl *sparseList) Len() int {
 	return len(sl.Data)
 }
 
-func (sl *SparseList) Full() bool {
+func (sl *sparseList) Full() bool {
 	return len(sl.Data) >= sl.MaxSize
 }
 
-func (sl *SparseList) Less(i, j int) bool {
-	indexI := GetIndexSparse(sl.Data[i])
-	indexJ := GetIndexSparse(sl.Data[j])
+func (sl *sparseList) Less(i, j int) bool {
+	indexI := getIndexSparse(sl.Data[i])
+	indexJ := getIndexSparse(sl.Data[j])
 
 	if indexI < indexJ {
 		return true
@@ -48,30 +48,30 @@ func (sl *SparseList) Less(i, j int) bool {
 	return sl.Data[i] > sl.Data[j]
 }
 
-func (sl *SparseList) Add(N uint32) {
+func (sl *sparseList) Add(N uint32) {
 	sl.Data = append(sl.Data, N)
 }
 
-func (sl *SparseList) Swap(i, j int) {
+func (sl *sparseList) Swap(i, j int) {
 	sl.Data[i], sl.Data[j] = sl.Data[j], sl.Data[i]
 }
 
-func (sl *SparseList) Get(i int) uint32 {
+func (sl *sparseList) Get(i int) uint32 {
 	return sl.Data[i]
 }
 
-func (sl *SparseList) Clear() {
+func (sl *sparseList) Clear() {
 	sl.Data = sl.Data[0:0]
 }
 
 // Merge will merge this sparse list with another mergable list.  This is done
 // by having the 32bit integers within the list sorted by it's encoded index
 // and, if another item with the same index exists, only keeping the one with
-// the largest number of leading zero bits (as given by LeadingBitUint32).
+// the largest number of leading zero bits (as given by leadingBitUint32).
 //
 // NOTE: This function assumes that this list is already sorted with the given
 // Less() function
-func (sl *SparseList) Merge(tmpList MergableList) {
+func (sl *sparseList) Merge(tmpList mergableList) {
 	// This function assumes that sl is already sorted!
 	if tmpList.Len() == 0 {
 		return
@@ -82,7 +82,7 @@ func (sl *SparseList) Merge(tmpList MergableList) {
 	var slStopIteration bool
 	sli := int(0)
 	if sl.Len() > 0 {
-		slIndex = GetIndexSparse(sl.Data[0])
+		slIndex = getIndexSparse(sl.Data[0])
 		slStopIteration = false
 	} else {
 		slStopIteration = true
@@ -93,7 +93,7 @@ func (sl *SparseList) Merge(tmpList MergableList) {
 	var value uint32
 	for i := 0; i < tmpList.Len(); i++ {
 		value = tmpList.Get(i)
-		tmpIndex := GetIndexSparse(value)
+		tmpIndex := getIndexSparse(value)
 		if tmpIndex == lastTmpIndex && i != 0 {
 			continue
 		}
@@ -104,7 +104,7 @@ func (sl *SparseList) Merge(tmpList MergableList) {
 					slStopIteration = true
 					break
 				}
-				slIndex = GetIndexSparse(sl.Data[sli])
+				slIndex = getIndexSparse(sl.Data[sli])
 			}
 		}
 		if slStopIteration || tmpIndex < slIndex {

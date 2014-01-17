@@ -43,8 +43,8 @@ type HLL struct {
 	alpha  float64
 	format byte
 
-	tempSet    *TempSet
-	sparseList *SparseList
+	tempSet    *tempSet
+	sparseList *sparseList
 
 	registers []uint8
 }
@@ -86,8 +86,8 @@ func NewHLL(p uint8) (*HLL, error) {
 	// Since HLL.registers is a uint8 slice and the SparseList is a uint32
 	// slice, we switch from sparse to normal with the sparse list is |m1/4| in
 	// size (ie: the same size as the registers would be.
-	sparseList := NewSparseList(p, int(m1/4))
-	tempSet := make(TempSet, 0, int(m1/8))
+	sparseList := newSparseList(p, int(m1/4))
+	tempSet := make(tempSet, 0, int(m1/8))
 
 	return &HLL{
 		P:          p,
@@ -114,16 +114,16 @@ func (h *HLL) Add(value string) {
 }
 
 func (h *HLL) addNormal(hash uint64) {
-	index := SliceUint64(hash, 63, 64-h.P)
-	w := SliceUint64(hash, 63-h.P, 0) << h.P
-	rho := LeadingBitUint64(w) + 1
+	index := sliceUint64(hash, 63, 64-h.P)
+	w := sliceUint64(hash, 63-h.P, 0) << h.P
+	rho := leadingBitUint64(w) + 1
 	if h.registers[index] < rho {
 		h.registers[index] = rho
 	}
 }
 
 func (h *HLL) addSparse(hash uint64) {
-	k := EncodeHash(hash, h.P)
+	k := encodeHash(hash, h.P)
 	h.tempSet = h.tempSet.Append(k)
 	if h.tempSet.Full() {
 		h.mergeSparse()
@@ -151,13 +151,13 @@ func (h *HLL) ToNormal() {
 	h.format = NORMAL
 	h.registers = make([]uint8, h.m1)
 	for _, value := range h.sparseList.Data {
-		index, rho := DecodeHash(value, h.P)
+		index, rho := decodeHash(value, h.P)
 		if h.registers[index] < rho {
 			h.registers[index] = rho
 		}
 	}
 	for _, value := range *(h.tempSet) {
-		index, rho := DecodeHash(value, h.P)
+		index, rho := decodeHash(value, h.P)
 		if h.registers[index] < rho {
 			h.registers[index] = rho
 		}
@@ -195,14 +195,14 @@ func (h *HLL) cardinalityNormalCorrected(Ebottom float64, V int) float64 {
 	E := h.alpha * float64(h.m1*h.m1) / Ebottom
 	var Eprime float64
 	if E < 5*float64(h.m1) {
-		Eprime = E - EstimateBias(E, h.P)
+		Eprime = E - estimateBias(E, h.P)
 	} else {
 		Eprime = E
 	}
 
 	var H float64
 	if V != 0 {
-		H = LinearCounting(h.m1, V)
+		H = linearCounting(h.m1, V)
 	} else {
 		H = Eprime
 	}
@@ -215,7 +215,7 @@ func (h *HLL) cardinalityNormalCorrected(Ebottom float64, V int) float64 {
 
 func (h *HLL) cardinalitySparse() float64 {
 	h.mergeSparse()
-	return LinearCounting(h.m2, int(h.m2)-h.sparseList.Len())
+	return linearCounting(h.m2, int(h.m2)-h.sparseList.Len())
 }
 
 // Union will merge all data in another HLL abject into this one.
@@ -235,7 +235,7 @@ func (h *HLL) Union(other *HLL) error {
 	} else if h.format == NORMAL && other.format == SPARSE {
 		other.mergeSparse()
 		for _, value := range other.sparseList.Data {
-			index, rho := DecodeHash(value, h.P)
+			index, rho := decodeHash(value, h.P)
 			if h.registers[index] < rho {
 				h.registers[index] = rho
 			}
@@ -306,7 +306,7 @@ func (h *HLL) cardinalityUnionNS(other *HLL) float64 {
 	other.mergeSparse()
 	registerOther := make([]uint8, h.m1)
 	for _, value := range other.sparseList.Data {
-		index, rho := DecodeHash(value, other.P)
+		index, rho := decodeHash(value, other.P)
 		if registerOther[index] < rho {
 			registerOther[index] = rho
 		}
@@ -337,10 +337,10 @@ func (h *HLL) cardinalityUnionSS(other *HLL) float64 {
 	var idxH, idxOther uint32
 	for i < h.sparseList.Len()-1 || j < other.sparseList.Len()-1 {
 		if i < h.sparseList.Len() {
-			idxH = GetIndexSparse(h.sparseList.Get(i))
+			idxH = getIndexSparse(h.sparseList.Get(i))
 		}
 		if j < other.sparseList.Len() {
-			idxOther = GetIndexSparse(other.sparseList.Get(j))
+			idxOther = getIndexSparse(other.sparseList.Get(j))
 		}
 		V += 1
 		if idxH < idxOther {
@@ -352,5 +352,5 @@ func (h *HLL) cardinalityUnionSS(other *HLL) float64 {
 			j += 1
 		}
 	}
-	return LinearCounting(h.m2, int(h.m2)-V)
+	return linearCounting(h.m2, int(h.m2)-V)
 }

@@ -10,7 +10,7 @@ package gohll
 // N      = 11110000111100001111000011110000
 // mask   = 00000000000000000000000001111110
 // result = 00000000000000000000000000111000
-func SliceUint32(N uint32, start, stop uint8) uint32 {
+func sliceUint32(N uint32, start, stop uint8) uint32 {
 	mask := uint32((1 << (start + 1)) - (1 << stop))
 	r := N & mask
 	if stop > 0 {
@@ -29,7 +29,7 @@ func SliceUint32(N uint32, start, stop uint8) uint32 {
 // N      = 11110000111100001111000011110000
 // mask   = 00000000000000000000000001111110
 // result = 00000000000000000000000000111000
-func SliceUint64(N uint64, start, stop uint8) uint64 {
+func sliceUint64(N uint64, start, stop uint8) uint64 {
 	mask := uint64((1 << (start + 1)) - (1 << stop))
 	r := N & mask
 	if stop > 0 {
@@ -45,7 +45,7 @@ func SliceUint64(N uint64, start, stop uint8) uint64 {
 // LeadingBitUint32(0x0fffffff) = 3
 // LeadingBitUint32(0x00ffffff) = 7
 // LeadingBitUint32(0x00000000) = 32
-func LeadingBitUint32(N uint32) uint8 {
+func leadingBitUint32(N uint32) uint8 {
 	if N == 0 {
 		return 32
 	}
@@ -60,7 +60,7 @@ func LeadingBitUint32(N uint32) uint8 {
 
 // LeadingBitUint64 returns what index has the first non-zero bit with the
 // leading bit being indexed at 0 and the last bit indexed at 64
-func LeadingBitUint64(N uint64) uint8 {
+func leadingBitUint64(N uint64) uint8 {
 	if N == 0 {
 		return 64
 	}

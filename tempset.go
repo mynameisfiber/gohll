@@ -2,19 +2,19 @@ package gohll
 
 import ()
 
-type TempSet []uint32
+type tempSet []uint32
 
-func (ts TempSet) Len() int {
+func (ts tempSet) Len() int {
 	return len(ts)
 }
 
-func (ts TempSet) Swap(i, j int) {
+func (ts tempSet) Swap(i, j int) {
 	ts[i], ts[j] = ts[j], ts[i]
 }
 
-func (ts TempSet) Less(i, j int) bool {
-	indexI := GetIndexSparse(ts[i])
-	indexJ := GetIndexSparse(ts[j])
+func (ts tempSet) Less(i, j int) bool {
+	indexI := getIndexSparse(ts[i])
+	indexJ := getIndexSparse(ts[j])
 
 	if indexI < indexJ {
 		return true
@@ -26,19 +26,19 @@ func (ts TempSet) Less(i, j int) bool {
 	return ts[i] > ts[j]
 }
 
-func (ts TempSet) Get(i int) uint32 {
+func (ts tempSet) Get(i int) uint32 {
 	return ts[i]
 }
 
-func (ts TempSet) Clear() {
+func (ts tempSet) Clear() {
 	ts = ts[0:0]
 }
 
-func (ts TempSet) Append(value uint32) *TempSet {
+func (ts tempSet) Append(value uint32) *tempSet {
 	newTs := append(ts, value)
 	return &newTs
 }
 
-func (ts TempSet) Full() bool {
+func (ts tempSet) Full() bool {
 	return len(ts) == cap(ts)
 }

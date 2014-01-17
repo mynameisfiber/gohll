@@ -4,53 +4,53 @@ import (
 	"math"
 )
 
-// EncodeHash takes in a 64bit hash and the set precision and outputs a 32bit
-// encoded hash for use with the SparseList
-func EncodeHash(x uint64, p uint8) uint32 {
-	if SliceUint64(x, 63-p, 39) == 0 {
+// encodeHash takes in a 64bit hash and the set precision and outputs a 32bit
+// encoded hash for use with the sparseList
+func encodeHash(x uint64, p uint8) uint32 {
+	if sliceUint64(x, 63-p, 39) == 0 {
 		var result uint32
 		result = uint32((x >> 32) &^ 0x7f)
-		w := SliceUint64(x, 63-p, 0) << p
-		result |= (uint32(LeadingBitUint64(w)) << 1)
+		w := sliceUint64(x, 63-p, 0) << p
+		result |= (uint32(leadingBitUint64(w)) << 1)
 		result |= 1
 		return result
 	}
 	return uint32(x>>32) &^ 0x1
 }
 
-// DecodeHash takes a 32bit hash which was encoded for use with the SparseList
+// decodeHash takes a 32bit hash which was encoded for use with the sparseList
 // and extracts the meaningful metadata from it using the normal mode precision
 // (namely it's index and location of it's leading set bit)
-func DecodeHash(x uint32, p uint8) (uint32, uint8) {
+func decodeHash(x uint32, p uint8) (uint32, uint8) {
 	var r uint8
 	if x&0x1 == 1 {
-		r = uint8(SliceUint32(x, 6, 1))
+		r = uint8(sliceUint32(x, 6, 1))
 	} else {
-		r = LeadingBitUint32(SliceUint32(x, 31-p, 1) << (1 + p))
+		r = leadingBitUint32(sliceUint32(x, 31-p, 1) << (1 + p))
 	}
-	return GetIndex(x, p), r + 1
+	return getIndex(x, p), r + 1
 
 }
 
-// GetIndex returns the normal mode precision (given by p) of an encoded hash
-func GetIndex(x uint32, p uint8) uint32 {
-	return SliceUint32(x, 31, 32-p)
+// getIndex returns the normal mode precision (given by p) of an encoded hash
+func getIndex(x uint32, p uint8) uint32 {
+	return sliceUint32(x, 31, 32-p)
 }
 
-// GetIndexSparse returns the sparse mode index of the encoded hash
-func GetIndexSparse(x uint32) uint32 {
+// getIndexSparse returns the sparse mode index of the encoded hash
+func getIndexSparse(x uint32) uint32 {
 	return x >> 7
 }
 
-// LinearCounting performs linear counting given the number of registers, m1, and the number
+// linearCounting performs linear counting given the number of registers, m1, and the number
 // of empty registers, V
-func LinearCounting(m1 uint, V int) float64 {
+func linearCounting(m1 uint, V int) float64 {
 	return float64(m1) * math.Log(float64(m1)/float64(V))
 }
 
-// EstimateBias estimates the amount of bias in a normal mode cardinality query
+// estimateBias estimates the amount of bias in a normal mode cardinality query
 // with an estimator value of E and a normal mode precision of p
-func EstimateBias(E float64, p uint8) float64 {
+func estimateBias(E float64, p uint8) float64 {
 	if p > 18 {
 		return 0.0
 	}
