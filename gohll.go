@@ -218,7 +218,7 @@ func (h *HLL) cardinalitySparse() float64 {
 	return linearCounting(h.m2, int(h.m2)-h.sparseList.Len())
 }
 
-// Union will merge all data in another HLL abject into this one.
+// Union will merge all data in another HLL object into this one.
 func (h *HLL) Union(other *HLL) error {
 	if h.P != other.P {
 		return SamePError
