@@ -20,7 +20,7 @@ type sparseList struct {
 
 func newSparseList(p uint8, capacity int) *sparseList {
 	return &sparseList{
-		Data:    make([]uint32, 0, capacity),
+		Data:    make([]uint32, 0),
 		P:       p,
 		MaxSize: capacity,
 	}

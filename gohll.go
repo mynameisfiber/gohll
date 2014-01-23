@@ -87,7 +87,7 @@ func NewHLL(p uint8) (*HLL, error) {
 	// slice, we switch from sparse to normal with the sparse list is |m1/4| in
 	// size (ie: the same size as the registers would be.
 	sparseList := newSparseList(p, int(m1/4))
-	tempSet := make(tempSet, 0, int(m1/8))
+	tempSet := make(tempSet, 0, int(m1/16))
 
 	return &HLL{
 		P:          p,
