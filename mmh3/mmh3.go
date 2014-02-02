@@ -1,3 +1,5 @@
+// MurmurHash implementation.
+// Cloned from github.com/reusee/mmh3
 package mmh3
 
 import (
