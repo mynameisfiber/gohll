@@ -16,6 +16,8 @@ func checkErrorBounds(t *testing.T, c, i, errorRate float64) {
 }
 
 func BenchmarkAddSparse(b *testing.B) {
+	b.ReportAllocs()
+
 	h, _ := NewHLL(20)
 	h.sparseList.MaxSize = 1e8
 
@@ -29,6 +31,7 @@ func BenchmarkAddNormal(b *testing.B) {
 	h, _ := NewHLL(20)
 	h.ToNormal()
 
+	b.ReportAllocs()
 	b.ResetTimer()
 	for i := 0; i <= b.N; i += 1 {
 		h.Add(fmt.Sprintf("%d", i))
@@ -42,6 +45,7 @@ func BenchmarkCardinalityNormal(b *testing.B) {
 		h.Add(fmt.Sprintf("%d", i))
 	}
 
+	b.ReportAllocs()
 	b.ResetTimer()
 	for i := 0; i <= b.N; i += 1 {
 		h.Cardinality()
@@ -55,6 +59,7 @@ func BenchmarkCardinalitySparse(b *testing.B) {
 		h.Add(fmt.Sprintf("%d", i))
 	}
 
+	b.ReportAllocs()
 	b.ResetTimer()
 	for i := 0; i <= b.N; i += 1 {
 		h.Cardinality()

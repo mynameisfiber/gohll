@@ -7,7 +7,7 @@ package gohll
 
 import (
 	"errors"
-	"github.com/reusee/mmh3"
+	"github.com/mynameisfiber/gohll/mmh3"
 	"math"
 )
 
@@ -24,12 +24,8 @@ var (
 
 // MMH3Hash is the default hasher and uses murmurhash to return a uint64
 func MMH3Hash(value string) uint64 {
-	hashBytes := mmh3.Hash128([]byte(value))
-	var hash uint64
-	for i, value := range hashBytes {
-		hash |= uint64(value) << uint(i*8)
-	}
-	return hash
+	h1, _ := mmh3.Hash128(value)
+	return h1
 }
 
 type HLL struct {
