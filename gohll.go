@@ -7,10 +7,11 @@ package gohll
 
 import (
 	"errors"
-	"github.com/reusee/mmh3"
+	"github.com/mynameisfiber/gohll/mmh3"
 	"math"
 )
 
+// Defined the constants used to identify spase vs normal mode HLL
 const (
 	SPARSE byte = iota
 	NORMAL
@@ -24,12 +25,8 @@ var (
 
 // MMH3Hash is the default hasher and uses murmurhash to return a uint64
 func MMH3Hash(value string) uint64 {
-	hashBytes := mmh3.Hash128([]byte(value))
-	var hash uint64
-	for i, value := range hashBytes {
-		hash |= uint64(value) << uint(i*8)
-	}
-	return hash
+	h1, _ := mmh3.Hash128(value)
+	return h1
 }
 
 type HLL struct {
@@ -184,7 +181,7 @@ func (h *HLL) cardinalityNormal() float64 {
 	for _, value := range h.registers {
 		Ebottom += math.Pow(2, -1.0*float64(value))
 		if value == 0 {
-			V += 1
+			V++
 		}
 	}
 
@@ -295,7 +292,7 @@ func (h *HLL) cardinalityUnionNN(other *HLL) float64 {
 		}
 		Ebottom += math.Pow(2, -1.0*float64(value))
 		if value == 0 {
-			V += 1
+			V++
 		}
 	}
 	return h.cardinalityNormalCorrected(Ebottom, V)
@@ -318,7 +315,7 @@ func (h *HLL) cardinalityUnionNS(other *HLL) float64 {
 		}
 		Ebottom += math.Pow(2, -1.0*float64(value))
 		if value == 0 {
-			V += 1
+			V++
 		}
 	}
 	registerOther = registerOther[:0]
@@ -342,14 +339,14 @@ func (h *HLL) cardinalityUnionSS(other *HLL) float64 {
 		if j < other.sparseList.Len() {
 			idxOther = getIndexSparse(other.sparseList.Get(j))
 		}
-		V += 1
+		V++
 		if idxH < idxOther {
-			i += 1
+			i++
 		} else if idxH > idxOther {
-			j += 1
+			j++
 		} else {
-			i += 1
-			j += 1
+			i++
+			j++
 		}
 	}
 	return linearCounting(h.m2, int(h.m2)-V)

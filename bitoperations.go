@@ -53,7 +53,7 @@ func leadingBitUint32(N uint32) uint8 {
 	r := uint8(0)
 	for (N & t) == 0 {
 		t >>= 1
-		r += 1
+		r++
 	}
 	return r
 }
@@ -68,7 +68,7 @@ func leadingBitUint64(N uint64) uint8 {
 	r := uint8(0)
 	for (N & t) == 0 {
 		t >>= 1
-		r += 1
+		r++
 	}
 	return r
 }

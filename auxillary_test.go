@@ -56,7 +56,7 @@ func TestEncodeDecode2(t *testing.T) {
 func TestEncodeDecode3(t *testing.T) {
 	p := uint8(4)
 	var hash uint64
-	for i := 0; i < 100; i += 1 {
+	for i := 0; i < 100; i++ {
 		hash = uint64(rand.Uint32())<<32 + uint64(rand.Uint32())
 
 		index := sliceUint64(hash, 63, 64-p)

@@ -99,7 +99,7 @@ func (sl *sparseList) Merge(tmpList mergableList) {
 		}
 		if !slStopIteration && tmpIndex > slIndex {
 			for tmpIndex > slIndex {
-				sli += 1
+				sli++
 				if sli >= sl.Len() {
 					slStopIteration = true
 					break

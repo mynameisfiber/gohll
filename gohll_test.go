@@ -1,3 +1,5 @@
+// +build go1.1
+
 package gohll
 
 import (
@@ -16,11 +18,13 @@ func checkErrorBounds(t *testing.T, c, i, errorRate float64) {
 }
 
 func BenchmarkAddSparse(b *testing.B) {
+	b.ReportAllocs()
+
 	h, _ := NewHLL(20)
 	h.sparseList.MaxSize = 1e8
 
 	b.ResetTimer()
-	for i := 0; i <= b.N; i += 1 {
+	for i := 0; i <= b.N; i++ {
 		h.Add(fmt.Sprintf("%d", i))
 	}
 }
@@ -29,8 +33,9 @@ func BenchmarkAddNormal(b *testing.B) {
 	h, _ := NewHLL(20)
 	h.ToNormal()
 
+	b.ReportAllocs()
 	b.ResetTimer()
-	for i := 0; i <= b.N; i += 1 {
+	for i := 0; i <= b.N; i++ {
 		h.Add(fmt.Sprintf("%d", i))
 	}
 }
@@ -38,12 +43,13 @@ func BenchmarkAddNormal(b *testing.B) {
 func BenchmarkCardinalityNormal(b *testing.B) {
 	h, _ := NewHLL(20)
 	h.ToNormal()
-	for i := 0; i <= 10000; i += 1 {
+	for i := 0; i <= 10000; i++ {
 		h.Add(fmt.Sprintf("%d", i))
 	}
 
+	b.ReportAllocs()
 	b.ResetTimer()
-	for i := 0; i <= b.N; i += 1 {
+	for i := 0; i <= b.N; i++ {
 		h.Cardinality()
 	}
 }
@@ -51,12 +57,13 @@ func BenchmarkCardinalityNormal(b *testing.B) {
 func BenchmarkCardinalitySparse(b *testing.B) {
 	h, _ := NewHLL(20)
 	h.sparseList.MaxSize = 1e8
-	for i := 0; i <= 10000; i += 1 {
+	for i := 0; i <= 10000; i++ {
 		h.Add(fmt.Sprintf("%d", i))
 	}
 
+	b.ReportAllocs()
 	b.ResetTimer()
-	for i := 0; i <= b.N; i += 1 {
+	for i := 0; i <= b.N; i++ {
 		h.Cardinality()
 	}
 }
@@ -67,7 +74,7 @@ func TestHolistic(t *testing.T) {
 	errorRate := 1.04 / math.Sqrt(float64(h.m1))
 
 	var i float64
-	for i = 0.0; i < 1000000; i += 1 {
+	for i = 0.0; i < 1000000; i++ {
 		h.Add(fmt.Sprintf("%d-%d", i, rand.Uint32()))
 
 		if int(i+1001)%1000 == 0 {
@@ -82,7 +89,7 @@ func TestSparse(t *testing.T) {
 	assert.Nil(t, err)
 
 	var i float64
-	for i = 0; i <= 50000; i += 1 {
+	for i = 0; i <= 50000; i++ {
 		h.Add(fmt.Sprintf("%d-%d", i, rand.Uint32()))
 	}
 
@@ -99,7 +106,7 @@ func TestNormal(t *testing.T) {
 
 	h.ToNormal()
 	var i float64
-	for i = 0; i <= 100000; i += 1 {
+	for i = 0; i <= 100000; i++ {
 		h.Add(fmt.Sprintf("%d-%d", i, rand.Uint32()))
 	}
 
@@ -115,7 +122,7 @@ func TestModeChange(t *testing.T) {
 	assert.Nil(t, err)
 
 	var i float64
-	for i = 0; i < 100000; i += 1 {
+	for i = 0; i < 100000; i++ {
 		h.Add(fmt.Sprintf("%d-%d", i, rand.Uint32()))
 	}
 
@@ -181,13 +188,13 @@ func TestUnionSparseSparse(t *testing.T) {
 func testSetOperations(t *testing.T, h1, h2 *HLL) {
 	var i float64
 	h1Format := h1.format
-	for i = 0; i <= 75000; i += 1 {
+	for i = 0; i <= 75000; i++ {
 		h1.Add(fmt.Sprintf("%d", i))
 	}
 	assert.Equal(t, h1Format, h1.format)
 
 	h2Format := h2.format
-	for i = 25000; i <= 100000; i += 1 {
+	for i = 25000; i <= 100000; i++ {
 		h2.Add(fmt.Sprintf("%d", i))
 	}
 	assert.Equal(t, h2Format, h2.format)
