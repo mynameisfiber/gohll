@@ -18,11 +18,10 @@ func checkErrorBounds(t *testing.T, c, i, errorRate float64) {
 }
 
 func BenchmarkAddSparse(b *testing.B) {
-	b.ReportAllocs()
-
 	h, _ := NewHLL(20)
 	h.sparseList.MaxSize = 1e8
 
+	b.ReportAllocs()
 	b.ResetTimer()
 	for i := 0; i <= b.N; i++ {
 		h.Add(fmt.Sprintf("%d", i))
