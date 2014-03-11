@@ -2,11 +2,6 @@
 // Cloned from github.com/reusee/mmh3
 package mmh3
 
-import (
-	"bytes"
-	"encoding/binary"
-)
-
 const (
 	c1_32 uint32 = 0xcc9e2d51
 	c2_32 uint32 = 0x1b873593
@@ -21,9 +16,9 @@ func Hash32(s string) uint32 {
 
 	nblocks := length >> 2
 	var h, k uint32
-	buf := bytes.NewBuffer(key)
+	key32 := uint32Slice(s)
 	for i := 0; i < nblocks; i++ {
-		binary.Read(buf, binary.LittleEndian, &k)
+		k = key32[i]
 		k *= c1_32
 		k = (k << 15) | (k >> (32 - 15))
 		k *= c2_32
@@ -70,10 +65,10 @@ func Hash128(s string) (uint64, uint64) {
 
 	nblocks := length >> 4
 	var h1, h2, k1, k2 uint64
-	buf := bytes.NewBuffer(key)
-	for i := 0; i < nblocks; i++ {
-		binary.Read(buf, binary.LittleEndian, &k1)
-		binary.Read(buf, binary.LittleEndian, &k2)
+	key64 := uint64Slice(s)
+
+	for i := 0; i < nblocks; i += 2 {
+		k1, k2 = key64[i], key64[i+1]
 		k1 *= c1_128
 		k1 = (k1 << 31) | (k1 >> (64 - 31))
 		k1 *= c2_128
