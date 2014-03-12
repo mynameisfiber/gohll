@@ -18,17 +18,31 @@ const (
 )
 
 var (
-	ErrInvalidP             = errors.New("invalid value of P, must be 4<=p<=25")
-	ErrSameP                = errors.New("both HLL instances must have the same value of P")
+	// ErrInvalidP is returned if an invalid precision is requested
+	ErrInvalidP = errors.New("invalid value of P, must be 4<=p<=25")
+
+	// ErrSameP is returned if an operation is requested between two HLL
+	// objects with different precisions
+	ErrSameP = errors.New("both HLL instances must have the same value of P")
+
+	// ErrErrorRateOutOfBounds is returned if an invalid error rate is
+	// requested
 	ErrErrorRateOutOfBounds = errors.New("error rate must be 0.26>=errorRate>=0.00025390625")
 )
 
 // MMH3Hash is the default hasher and uses murmurhash to return a uint64
+// NOTE: This hashing function will clobber the original hash
 func MMH3Hash(value string) uint64 {
 	h1, _ := mmh3.Hash128(value)
 	return h1
 }
 
+// HLL is the structure holding the HLL registers and maintains state.  State
+// includes:
+// - Whether we are in normal or spase mode
+// - Register values
+// - Desired precision
+// - Reference to the hashing function used
 type HLL struct {
 	P uint8
 
