@@ -111,9 +111,9 @@ structure.
 
 This library is fast!  With an error rate of __0.1%__ (ie: `p=20`), while in
 the sparse regime (ie: small number of items compared to the error rate
-chosen), we can accomplish about __222,200 insertions per second__ on a 2011
+chosen), we can accomplish about __269,000 insertions per second__ on a 2011
 Macbook Air.  For the normal regime (ie: large number of items) we accomplish
-__708,215 insertions per second__ on the same hardware!  Furthermore,
+__1,880,000 insertions per second__ on the same hardware!  Furthermore,
 cardinality queries (ie: asking "how many unique elements are in this HLL?")
 are quite quick.  While they depend on many subtleties regarding the state of
 the HLL, they have an upper bound of __7ms__ per query (average of __2ms__) for
