@@ -5,6 +5,7 @@ package gohll
 import (
 	"fmt"
 	"github.com/stretchr/testify/assert"
+	"hash/fnv"
 	"math"
 	"math/rand"
 	"testing"
@@ -17,12 +18,17 @@ func checkErrorBounds(t *testing.T, c, i, errorRate float64) {
 	}
 }
 
-func BenchmarkAddSparse(b *testing.B) {
-	b.ReportAllocs()
+func fnv1a(s string) uint64 {
+	h := fnv.New64a()
+	h.Write(byteSlice(s))
+	return h.Sum64()
+}
 
+func BenchmarkAddSparse(b *testing.B) {
 	h, _ := NewHLL(20)
 	h.sparseList.MaxSize = 1e8
 
+	b.ReportAllocs()
 	b.ResetTimer()
 	for i := 0; i <= b.N; i++ {
 		h.Add(fmt.Sprintf("%d", i))
@@ -31,6 +37,30 @@ func BenchmarkAddSparse(b *testing.B) {
 
 func BenchmarkAddNormal(b *testing.B) {
 	h, _ := NewHLL(20)
+	h.ToNormal()
+
+	b.ReportAllocs()
+	b.ResetTimer()
+	for i := 0; i <= b.N; i++ {
+		h.Add(fmt.Sprintf("%d", i))
+	}
+}
+
+func BenchmarkAddSparseFNV1A(b *testing.B) {
+	h, _ := NewHLL(20)
+	h.Hasher = fnv1a
+	h.sparseList.MaxSize = 1e8
+
+	b.ReportAllocs()
+	b.ResetTimer()
+	for i := 0; i <= b.N; i++ {
+		h.Add(fmt.Sprintf("%d", i))
+	}
+}
+
+func BenchmarkAddNormalFNV1A(b *testing.B) {
+	h, _ := NewHLL(20)
+	h.Hasher = fnv1a
 	h.ToNormal()
 
 	b.ReportAllocs()
