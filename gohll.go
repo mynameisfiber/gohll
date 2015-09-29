@@ -7,8 +7,9 @@ package gohll
 
 import (
 	"errors"
-	"github.com/mynameisfiber/gohll/mmh3"
 	"math"
+
+	"github.com/mynameisfiber/gohll/mmh3"
 )
 
 // Defined the constants used to identify spase vs normal mode HLL
@@ -116,6 +117,17 @@ func NewHLL(p uint8) (*HLL, error) {
 // Hasher function
 func (h *HLL) Add(value string) {
 	hash := h.Hasher(value)
+	switch h.format {
+	case NORMAL:
+		h.addNormal(hash)
+	case SPARSE:
+		h.addSparse(hash)
+	}
+}
+
+// Add will add the given string value to the HLL using the specified hasher function.
+func (h *HLL) AddWithHasher(value string, hasher func(string) uint64) {
+	hash := hasher(value)
 	switch h.format {
 	case NORMAL:
 		h.addNormal(hash)

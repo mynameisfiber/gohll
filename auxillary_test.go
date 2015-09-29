@@ -1,10 +1,11 @@
 package gohll
 
 import (
-	"github.com/stretchr/testify/assert"
 	"math"
 	"math/rand"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestEncodeHash(t *testing.T) {
