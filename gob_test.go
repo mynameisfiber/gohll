@@ -32,7 +32,7 @@ func TestGobSparse(t *testing.T) {
 	err = gob.NewDecoder(&buf).Decode(&h2)
 	assert.Nil(t, err)
 
-	assert.Equal(t, h.format, SPARSE, "Not using sparse mode")
+	assert.Equal(t, h2.format, SPARSE, "Not using sparse mode")
 	assert.Equal(t, c, h2.Cardinality())
 
 	for i = 0; i <= 40000; i++ {
@@ -65,7 +65,7 @@ func TestGobNormal(t *testing.T) {
 	err = gob.NewDecoder(&buf).Decode(&h2)
 	assert.Nil(t, err)
 
-	assert.Equal(t, h.format, NORMAL, "Not using normal mode")
+	assert.Equal(t, h2.format, NORMAL, "Not using normal mode")
 	assert.Equal(t, c, h2.Cardinality())
 
 	for i = 0; i <= 40000; i++ {
