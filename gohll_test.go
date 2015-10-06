@@ -4,16 +4,19 @@ package gohll
 
 import (
 	"fmt"
-	"github.com/stretchr/testify/assert"
 	"hash/fnv"
 	"math"
 	"math/rand"
+	"runtime/debug"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func checkErrorBounds(t *testing.T, c, i, errorRate float64) {
 	actualError := math.Abs(c/(i-1) - 1)
 	if actualError > 3*errorRate {
+		debug.PrintStack()
 		t.Fatalf("Error too high for cardinality estimation: %f should be %f (rate of %f instead of %f)", c, i-1, actualError, errorRate)
 	}
 }
