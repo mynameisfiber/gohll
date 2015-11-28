@@ -14,8 +14,8 @@ type serializable struct {
 	Alpha  float64
 	Format byte
 
-	TempSet    *tempSet
-	SparseList *sparseList
+	TempSet    tempSet
+	SparseList sparseList
 
 	Registers []uint8
 }
@@ -24,6 +24,14 @@ type serializable struct {
 // Does not serialize hasher!
 func (h *HLL) MarshalBinary() ([]byte, error) {
 	var buf bytes.Buffer
+	ts := h.tempSet
+	if ts == nil {
+		ts = &tempSet{}
+	}
+	sl := h.sparseList
+	if sl == nil {
+		sl = &sparseList{}
+	}
 	err := gob.NewEncoder(&buf).Encode(
 		serializable{
 			P:          h.P,
@@ -31,8 +39,8 @@ func (h *HLL) MarshalBinary() ([]byte, error) {
 			M2:         h.m2,
 			Alpha:      h.alpha,
 			Format:     h.format,
-			TempSet:    h.tempSet,
-			SparseList: h.sparseList,
+			TempSet:    *ts,
+			SparseList: *sl,
 			Registers:  h.registers,
 		})
 	if err != nil {
@@ -54,8 +62,8 @@ func (h *HLL) UnmarshalBinary(data []byte) error {
 	h.m2 = s.M2
 	h.alpha = s.Alpha
 	h.format = s.Format
-	h.tempSet = s.TempSet
-	h.sparseList = s.SparseList
+	h.tempSet = &s.TempSet
+	h.sparseList = &s.SparseList
 	h.registers = s.Registers
 
 	if h.Hasher == nil {
