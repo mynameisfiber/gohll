@@ -1,8 +1,9 @@
 package gohll
 
 import (
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestRhoCondition(t *testing.T) {
