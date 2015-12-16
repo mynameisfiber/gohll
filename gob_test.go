@@ -11,6 +11,21 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestGobEmpty(t *testing.T) {
+	h := &HLL{}
+	var buf bytes.Buffer
+	err := gob.NewEncoder(&buf).Encode(h)
+	assert.Nil(t, err)
+	var h2 HLL
+	err = gob.NewDecoder(&buf).Decode(&h2)
+	assert.Nil(t, err)
+	if h2.tempSet == nil {
+		t.Fatal("Gob decode failed for h2.tempSet")
+	}
+	if h2.sparseList == nil {
+		t.Fatal("Gob decode failed for h2.sparseList")
+	}
+}
 func TestGobSparse(t *testing.T) {
 	h, err := NewHLL(20)
 	assert.Nil(t, err)

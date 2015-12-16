@@ -1,7 +1,5 @@
 package gohll
 
-import ()
-
 type tempSet []uint32
 
 func (ts tempSet) Len() int {
