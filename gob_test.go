@@ -32,7 +32,7 @@ func TestGobSparse(t *testing.T) {
 
 	var i float64
 	for i = 0; i <= 50000; i++ {
-		h.Add(fmt.Sprintf("%d-%d", i, rand.Uint32()))
+		h.Add(fmt.Sprintf("%d-%d", int(i), rand.Uint32()))
 	}
 
 	assert.Equal(t, h.format, SPARSE, "Not using sparse mode")
@@ -52,8 +52,8 @@ func TestGobSparse(t *testing.T) {
 
 	for i = 0; i <= 40000; i++ {
 		v := rand.Uint32()
-		h.Add(fmt.Sprintf("%d-%d", i, v))
-		h2.Add(fmt.Sprintf("%d-%d", i, v))
+		h.Add(fmt.Sprintf("%d-%d", int(i), v))
+		h2.Add(fmt.Sprintf("%d-%d", int(i), v))
 	}
 
 	assert.Equal(t, h.Cardinality(), h2.Cardinality())
@@ -66,7 +66,7 @@ func TestGobNormal(t *testing.T) {
 
 	var i float64
 	for i = 0; i <= 100000; i++ {
-		h.Add(fmt.Sprintf("%d-%d", i, rand.Uint32()))
+		h.Add(fmt.Sprintf("%d-%d", int(i), rand.Uint32()))
 	}
 	assert.Equal(t, h.format, NORMAL, "Not using normal mode")
 
@@ -85,8 +85,8 @@ func TestGobNormal(t *testing.T) {
 
 	for i = 0; i <= 40000; i++ {
 		v := rand.Uint32()
-		h.Add(fmt.Sprintf("%d-%d", i, v))
-		h2.Add(fmt.Sprintf("%d-%d", i, v))
+		h.Add(fmt.Sprintf("%d-%d", int(i), v))
+		h2.Add(fmt.Sprintf("%d-%d", int(i), v))
 	}
 
 	assert.Equal(t, h.Cardinality(), h2.Cardinality())
