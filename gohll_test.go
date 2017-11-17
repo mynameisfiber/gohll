@@ -34,7 +34,7 @@ func BenchmarkAddSparse(b *testing.B) {
 	b.ReportAllocs()
 	b.ResetTimer()
 	for i := 0; i <= b.N; i++ {
-		h.Add(fmt.Sprintf("%d", i))
+		h.Add(fmt.Sprintf("%d", int(i)))
 	}
 }
 
@@ -45,7 +45,7 @@ func BenchmarkAddNormal(b *testing.B) {
 	b.ReportAllocs()
 	b.ResetTimer()
 	for i := 0; i <= b.N; i++ {
-		h.Add(fmt.Sprintf("%d", i))
+		h.Add(fmt.Sprintf("%d", int(i)))
 	}
 }
 
@@ -57,7 +57,7 @@ func BenchmarkAddSparseFNV1A(b *testing.B) {
 	b.ReportAllocs()
 	b.ResetTimer()
 	for i := 0; i <= b.N; i++ {
-		h.Add(fmt.Sprintf("%d", i))
+		h.Add(fmt.Sprintf("%d", int(i)))
 	}
 }
 
@@ -69,7 +69,7 @@ func BenchmarkAddNormalFNV1A(b *testing.B) {
 	b.ReportAllocs()
 	b.ResetTimer()
 	for i := 0; i <= b.N; i++ {
-		h.Add(fmt.Sprintf("%d", i))
+		h.Add(fmt.Sprintf("%d", int(i)))
 	}
 }
 
@@ -77,7 +77,7 @@ func BenchmarkCardinalityNormal(b *testing.B) {
 	h, _ := NewHLL(20)
 	h.ToNormal()
 	for i := 0; i <= 10000; i++ {
-		h.Add(fmt.Sprintf("%d", i))
+		h.Add(fmt.Sprintf("%d", int(i)))
 	}
 
 	b.ReportAllocs()
@@ -91,7 +91,7 @@ func BenchmarkCardinalitySparse(b *testing.B) {
 	h, _ := NewHLL(20)
 	h.sparseList.MaxSize = 1e8
 	for i := 0; i <= 10000; i++ {
-		h.Add(fmt.Sprintf("%d", i))
+		h.Add(fmt.Sprintf("%d", int(i)))
 	}
 
 	b.ReportAllocs()
@@ -108,7 +108,7 @@ func TestHolistic(t *testing.T) {
 
 	var i float64
 	for i = 0.0; i < 1000000; i++ {
-		h.Add(fmt.Sprintf("%d-%d", i, rand.Uint32()))
+		h.Add(fmt.Sprintf("%d-%d", int(i), rand.Uint32()))
 
 		if int(i+1001)%1000 == 0 {
 			c := h.Cardinality()
@@ -123,7 +123,7 @@ func TestSparse(t *testing.T) {
 
 	var i float64
 	for i = 0; i <= 50000; i++ {
-		h.Add(fmt.Sprintf("%d-%d", i, rand.Uint32()))
+		h.Add(fmt.Sprintf("%d-%d", int(i), rand.Uint32()))
 	}
 
 	assert.Equal(t, h.format, SPARSE, "Not using sparse mode")
@@ -140,7 +140,7 @@ func TestNormal(t *testing.T) {
 	h.ToNormal()
 	var i float64
 	for i = 0; i <= 100000; i++ {
-		h.Add(fmt.Sprintf("%d-%d", i, rand.Uint32()))
+		h.Add(fmt.Sprintf("%d-%d", int(i), rand.Uint32()))
 	}
 
 	assert.Equal(t, h.format, NORMAL, "Not using normal mode")
@@ -156,7 +156,7 @@ func TestModeChange(t *testing.T) {
 
 	var i float64
 	for i = 0; i < 100000; i++ {
-		h.Add(fmt.Sprintf("%d-%d", i, rand.Uint32()))
+		h.Add(fmt.Sprintf("%d-%d", int(i), rand.Uint32()))
 	}
 
 	assert.Equal(t, h.format, NORMAL, "Did not convert to normal mode")
@@ -222,13 +222,13 @@ func testSetOperations(t *testing.T, h1, h2 *HLL) {
 	var i float64
 	h1Format := h1.format
 	for i = 0; i <= 75000; i++ {
-		h1.Add(fmt.Sprintf("%d", i))
+		h1.Add(fmt.Sprintf("%d", int(i)))
 	}
 	assert.Equal(t, h1Format, h1.format)
 
 	h2Format := h2.format
 	for i = 25000; i <= 100000; i++ {
-		h2.Add(fmt.Sprintf("%d", i))
+		h2.Add(fmt.Sprintf("%d", int(i)))
 	}
 	assert.Equal(t, h2Format, h2.format)
 

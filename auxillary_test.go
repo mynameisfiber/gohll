@@ -66,7 +66,6 @@ func TestEncodeDecode3(t *testing.T) {
 
 		e := encodeHash(hash, p)
 		edIndex, edRho := decodeHash(e, p)
-		t.Logf("%x=%x %x %x=%x %x\n", index, edIndex, w, rho, edRho, e)
 
 		assert.Equal(t, uint64(edIndex), uint64(index), "Incorrect index")
 		assert.Equal(t, uint64(edRho), uint64(rho), "Incorrect index")
