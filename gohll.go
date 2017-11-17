@@ -117,17 +117,18 @@ func NewHLL(p uint8) (*HLL, error) {
 // Hasher function
 func (h *HLL) Add(value string) {
 	hash := h.Hasher(value)
-	switch h.format {
-	case NORMAL:
-		h.addNormal(hash)
-	case SPARSE:
-		h.addSparse(hash)
-	}
+    h.AddHash(hash)
 }
 
-// Add will add the given string value to the HLL using the specified hasher function.
+// AddWithHasher will add the given string value to the HLL using the specified
+// hasher function.
 func (h *HLL) AddWithHasher(value string, hasher func(string) uint64) {
 	hash := hasher(value)
+    h.AddHash(hash)
+}
+
+// AddHash will add the given uint64 hash to the HLL
+func (h *HLL) AddHash(hash uint64) {
 	switch h.format {
 	case NORMAL:
 		h.addNormal(hash)
