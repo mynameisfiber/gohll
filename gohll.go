@@ -117,14 +117,14 @@ func NewHLL(p uint8) (*HLL, error) {
 // Hasher function
 func (h *HLL) Add(value string) {
 	hash := h.Hasher(value)
-    h.AddHash(hash)
+	h.AddHash(hash)
 }
 
 // AddWithHasher will add the given string value to the HLL using the specified
 // hasher function.
 func (h *HLL) AddWithHasher(value string, hasher func(string) uint64) {
 	hash := hasher(value)
-    h.AddHash(hash)
+	h.AddHash(hash)
 }
 
 // AddHash will add the given uint64 hash to the HLL
