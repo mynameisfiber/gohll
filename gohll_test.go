@@ -212,8 +212,8 @@ func TestUnionSparseSparse(t *testing.T) {
 	h2, err := NewHLL(10)
 	assert.Nil(t, err)
 
-	h1.sparseList.MaxSize = 1e8
-	h2.sparseList.MaxSize = 1e8
+	h1.sparseList.MaxSize = 1e9
+	h2.sparseList.MaxSize = 1e9
 
 	testSetOperations(t, h1, h2)
 }

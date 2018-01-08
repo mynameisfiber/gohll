@@ -360,13 +360,19 @@ func (h *HLL) cardinalityUnionSS(other *HLL) float64 {
 	var i, j, V int
 	var idxH, idxOther uint32
 	for i < h.sparseList.Len()-1 || j < other.sparseList.Len()-1 {
+		V++
 		if i < h.sparseList.Len() {
 			idxH = getIndexSparse(h.sparseList.Get(i))
+		} else {
+			j++
+			continue
 		}
 		if j < other.sparseList.Len() {
 			idxOther = getIndexSparse(other.sparseList.Get(j))
+		} else {
+			i++
+			continue
 		}
-		V++
 		if idxH < idxOther {
 			i++
 		} else if idxH > idxOther {
