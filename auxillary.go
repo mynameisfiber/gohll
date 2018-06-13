@@ -62,7 +62,12 @@ func estimateBias(E float64, p uint8) float64 {
 
 	biasVector := biasData[p-4]
 
-	for i, v := range estimateVector[1:] {
+	if estimateVector[0] == E {
+		return biasVector[0]
+	}
+
+	for i := 1; i < len(estimateVector); i++ {
+		v := estimateVector[i]
 		if v == E {
 			return biasVector[i]
 		}
