@@ -80,3 +80,12 @@ func TestEstimateBias(t *testing.T) {
 		t.Fatalf("Incorrect bias estimate.  Calculated %f, should be closer to %f", bias, actualBias)
 	}
 }
+
+func TestEstimateBias2(t *testing.T) {
+	bias := estimateBias(11822.412839663843, 14)
+	actualBias := 11811.188669
+
+	if math.Abs(bias/actualBias-1) > 0.01 {
+		t.Fatalf("Incorrect bias estimate.  Calculated %f, should be closer to %f", bias, actualBias)
+	}
+}
