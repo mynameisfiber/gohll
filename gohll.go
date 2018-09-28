@@ -29,7 +29,16 @@ var (
 	// ErrErrorRateOutOfBounds is returned if an invalid error rate is
 	// requested
 	ErrErrorRateOutOfBounds = errors.New("error rate must be 0.26>=errorRate>=0.00025390625")
+
+	// Pre-computed table of powers of 2^(-j) to speed up cardinality calculation
+	powers [256]float64
 )
+
+func init() {
+	for j := 0; j < 256; j++ {
+		powers[j] = math.Pow(2, -1.0*float64(j))
+	}
+}
 
 // MMH3Hash is the default hasher and uses murmurhash to return a uint64
 // NOTE: This hashing function will clobber the original hash
@@ -206,7 +215,7 @@ func (h *HLL) cardinalityNormal() float64 {
 	var V int
 	Ebottom := 0.0
 	for _, value := range h.registers {
-		Ebottom += math.Pow(2, -1.0*float64(value))
+		Ebottom += powers[value]
 		if value == 0 {
 			V++
 		}
