@@ -19,14 +19,14 @@ intersection operations between multiple HLL objects.  It's easy!  Let me show y
 
 ```
 // First we make an HLL with an error rate of ~0.1%
-h := NewHLLByError(0.001)
+h, _ := NewHLLByError(0.001)
 
 // Now it's time to start adding things to it!
 for i := 0; i < 100000; i += 1 {
-    h.Add(fmt.Sprintf("%d", math.Uint32())
+    h.Add(fmt.Sprintf("%d", rand.Uint32()))
 }
 
-uniqueitems := h.Cardinality()
+uniqueitems, _ := h.Cardinality()
 ```
 
 Wow! That was so easy!  But wait a second, you may be saying... What about
@@ -35,22 +35,22 @@ easily as well!
 
 ```
 // let's make 2 hll's... they must have the same error rate!
-h1 := NewHLLByError(0.001)
-h2 := NewHLLByError(0.001)
+h1, _ := NewHLLByError(0.001)
+h2, _ := NewHLLByError(0.001)
 
 // now let's add different things to each one
 for i := 0; i < 100000; i += 1 {
-    h1.Add(fmt.Sprintf("%d", math.Uint32())
-    h2.Add(fmt.Sprintf("%d", math.Uint32())
+    h1.Add(fmt.Sprintf("%d", rand.Uint32()))
+    h2.Add(fmt.Sprintf("%d", rand.Uint32()))
 }
 
-uniqueItemsH1 := h1.Cardinality() // |h1|
-uniqueItemsH2 := h2.Cardinality() // |h2|
+uniqueItemsH1, _ := h1.Cardinality() // |h1|
+uniqueItemsH2, _ := h2.Cardinality() // |h2|
 
-uniqueItemsEither := h1.CardinalityUnion(h2) // |h1 u h2|
-uniqueItemsBoth   := h1.CardinalityIntersection(h2) // |h1 n h2|
+uniqueItemsEither, _ := h1.CardinalityUnion(h2) // |h1 u h2|
+uniqueItemsBoth, _   := h1.CardinalityIntersection(h2) // |h1 n h2|
 
-h3 := h1.Union(h2)
+h1.Union(h2)
 ```
 
 In this example, all the `Cardinality*` queries return a `float64` with the
