@@ -37,37 +37,3 @@ func TestSliceUint64(t *testing.T) {
 	result = sliceUint64(N, start, stop)
 	assert.Equal(t, result, ideal, "Incorrect uint64 slice")
 }
-
-func TestLeadingBitUint32(t *testing.T) {
-	N := uint32(0xffffffff)
-	ideal := uint8(0)
-	result := leadingBitUint32(N)
-	assert.Equal(t, result, ideal, "Incorrect Leading Bit")
-
-	N = uint32(0x00000000)
-	ideal = uint8(32)
-	result = leadingBitUint32(N)
-	assert.Equal(t, result, ideal, "Incorrect Leading Bit")
-
-	N = uint32(0x00f00000)
-	ideal = uint8(2 * 4)
-	result = leadingBitUint32(N)
-	assert.Equal(t, result, ideal, "Incorrect Leading Bit")
-}
-
-func TestLeadingBitUint64(t *testing.T) {
-	N := uint64(0xffffffffffffffff)
-	ideal := uint8(0)
-	result := leadingBitUint64(N)
-	assert.Equal(t, result, ideal, "Incorrect Leading Bit")
-
-	N = uint64(0x0000000000000000)
-	ideal = uint8(64)
-	result = leadingBitUint64(N)
-	assert.Equal(t, result, ideal, "Incorrect Leading Bit")
-
-	N = uint64(0x0000f00000000000)
-	ideal = uint8(4 * 4)
-	result = leadingBitUint64(N)
-	assert.Equal(t, result, ideal, "Incorrect Leading Bit")
-}

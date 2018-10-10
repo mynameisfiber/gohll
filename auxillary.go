@@ -2,6 +2,7 @@ package gohll
 
 import (
 	"math"
+	"math/bits"
 )
 
 // encodeHash takes in a 64bit hash and the set precision and outputs a 32bit
@@ -11,7 +12,7 @@ func encodeHash(x uint64, p uint8) uint32 {
 		var result uint32
 		result = uint32((x >> 32) &^ 0x7f)
 		w := sliceUint64(x, 63-p, 0) << p
-		result |= (uint32(leadingBitUint64(w)) << 1)
+		result |= (uint32(bits.LeadingZeros64(w)) << 1)
 		result |= 1
 		return result
 	}
@@ -26,7 +27,7 @@ func decodeHash(x uint32, p uint8) (uint32, uint8) {
 	if x&0x1 == 1 {
 		r = uint8(sliceUint32(x, 6, 1))
 	} else {
-		r = leadingBitUint32(sliceUint32(x, 31-p, 1) << (1 + p))
+		r = uint8(bits.LeadingZeros32(sliceUint32(x, 31-p, 1) << (1 + p)))
 	}
 	return getIndex(x, p), r + 1
 

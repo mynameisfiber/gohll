@@ -67,7 +67,7 @@ func (sl *sparseList) Clear() {
 // Merge will merge this sparse list with another mergable list.  This is done
 // by having the 32bit integers within the list sorted by it's encoded index
 // and, if another item with the same index exists, only keeping the one with
-// the largest number of leading zero bits (as given by leadingBitUint32).
+// the largest number of leading zero bits.
 //
 // NOTE: This function assumes that this list is already sorted with the given
 // Less() function
