@@ -8,6 +8,7 @@ package gohll
 import (
 	"errors"
 	"math"
+	"math/bits"
 
 	"github.com/mynameisfiber/gohll/mmh3"
 )
@@ -140,7 +141,7 @@ func (h *HLL) AddHash(hash uint64) {
 func (h *HLL) addNormal(hash uint64) {
 	index := sliceUint64(hash, 63, 64-h.P)
 	w := sliceUint64(hash, 63-h.P, 0) << h.P
-	rho := leadingBitUint64(w) + 1
+	rho := uint8(bits.LeadingZeros64(w) + 1)
 	if h.registers[index] < rho {
 		h.registers[index] = rho
 	}

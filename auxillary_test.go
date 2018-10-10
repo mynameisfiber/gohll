@@ -2,6 +2,7 @@ package gohll
 
 import (
 	"math"
+	"math/bits"
 	"math/rand"
 	"testing"
 
@@ -62,7 +63,7 @@ func TestEncodeDecode3(t *testing.T) {
 
 		index := sliceUint64(hash, 63, 64-p)
 		w := sliceUint64(hash, 63-p, 0) << p
-		rho := leadingBitUint64(w) + 1
+		rho := bits.LeadingZeros64(w) + 1
 
 		e := encodeHash(hash, p)
 		edIndex, edRho := decodeHash(e, p)
